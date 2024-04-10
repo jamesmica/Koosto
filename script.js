@@ -63,8 +63,6 @@ function initialiserCarte() {
     }).addTo(carte);
 }
 
-initialiserCarte();
-
 function geocoderAdresse(adresse, infos) {
     const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(adresse)}&limit=1`;
 
