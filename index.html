@@ -16,7 +16,7 @@
     <script src="script.js"></script>
     <script>
         window.addEventListener("message", function(event) {
-            if (event.origin != 'http://koosto.fr') {
+            if (event.origin != 'http://koosto.fr' && event.origin != 'http://editor.weweb.io') {
                 return;
             }
 
