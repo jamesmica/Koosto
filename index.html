@@ -14,5 +14,14 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="script.js"></script>
+    <script>
+        window.addEventListener("message", function(event) {
+            if (event.origin != 'http://koosto.fr') {
+                return;
+            }
+
+            alert( "received: " + event.data );
+            });
+    </script>
 </body>
 </html>
