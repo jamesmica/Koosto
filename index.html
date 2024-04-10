@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Carte des Établissements</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
     <input type="text" id="codeCommuneInput" placeholder="Entrez le code de la commune" style="position: fixed; z-index: 3; margin-left: 60px;">
@@ -12,15 +13,16 @@
 
     <div id="maCarte" style="height: 100vh; z-index: 1;"></div>
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="script.js"></script>
     <script>
         window.addEventListener("message", function(event) {
             if (event.origin != 'http://koosto.fr' && event.origin != 'http://editor.weweb.io') {
+                console.log("COOOOOOOOOOOOOOOOOOOORS");
+                alert('COOOOOOOOOORS');
                 return;
             }
-
             alert( "received: " + event.data );
+            console.log('ok');
             });
     </script>
 </body>

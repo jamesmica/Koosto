@@ -55,13 +55,7 @@ function chargerEtablissements() {
 // Assurez-vous que cette fonction est appelée une fois que la carte doit être initialisée
 initialiserCarte();
 
-// Assurez-vous que cette partie est correcte et que votre HTML inclut une div avec l'id 'maCarte'
-function initialiserCarte() {
-    carte = L.map('maCarte').setView([48.8566, 2.3522], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(carte);
-}
+
 
 function geocoderAdresse(adresse, infos) {
     const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(adresse)}&limit=1`;
