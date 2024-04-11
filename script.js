@@ -15,7 +15,7 @@ window.addEventListener("message", function(event) {
     alert( "received: " + event.data );
     var data = JSON.parse(event.data);
     fetchIsochrone(carte, data);
-
+    chargerIsochroneEtListerCommunes();
     });
 
 
@@ -141,7 +141,7 @@ async function chargerEtablissements(codesINSEE) {
     console.log('codes INSEE ',codesINSEE);
     for (const codeINSEE of codesINSEE) {
         console.log('insee sirene :',codeINSEE);
-        const urlSirene = `https://api.insee.fr/entreprises/sirene/V3.11/siret?q=codeCommuneEtablissement:${codeINSEE} AND periode(activitePrincipaleEtablissement:86.21Z)&date=2024-01-01&nombre=100`;
+        const urlSirene = `https://api.insee.fr/entreprises/sirene/V3.11/siret?q=codeCommuneEtablissement:${codeINSEE} AND periode(activitePrincipaleEtablissement:86.21Z)&nombre=100`;
 
         const response = await fetch(urlSirene, {
             method: 'GET',
@@ -152,15 +152,15 @@ async function chargerEtablissements(codesINSEE) {
         });
         
         if (!response.ok) {
-            throw new Error(`Erreur HTTP : ${response.status} ${codeINSEE}`);
+            console.error(`Erreur HTTP : ${response.status} ${codeINSEE}`);
         }
         
         // Vérifiez le type de contenu avant de parser en JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            console.error("La réponse n'est pas du JSON :", await response.text());
-            return;
-        }
+        // const contentType = response.headers.get('content-type');
+        // if (!contentType || !contentType.includes('application/json')) {
+        //     console.error("La réponse n'est pas du JSON :", await response.text());
+        //     return;
+        // }
         
         const dataSirene = await response.json();
             console.log(dataSirene);
@@ -197,5 +197,3 @@ function afficherSurCarte(lat, lon, infos) {
         console.log("Coordonnées non disponibles pour l'établissement :", infos);
     }
 }
-
-chargerIsochroneEtListerCommunes();
