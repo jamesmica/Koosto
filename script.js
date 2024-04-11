@@ -109,7 +109,7 @@ function creerGrillePointsEtAfficherSurCarte(isochrone, pas, map) {
 }
 
 async function listerCommunesCouvertesParIsochrone(isochrone) {
-    grillePoints = null;
+
     let grillePoints = creerGrillePointsEtAfficherSurCarte(isochrone, 0.005, carte);
     for (let point of grillePoints) {
         const url = `https://api-adresse.data.gouv.fr/reverse/?lon=${point[1]}&lat=${point[0]}`;
