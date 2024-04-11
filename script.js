@@ -1,7 +1,11 @@
 var data;
 var currentIsochrone;
 let codesINSEE = new Set();
-console.log(data);
+
+var data = {"lat":48,"lon":5,"mode":"driving","time":10};
+var lat = data.lat;
+var lon = data.lon;
+
 window.addEventListener("message", function(event) {
     if (event.origin != 'http://koosto.fr' && event.origin != 'http://editor.weweb.io' && event.origin != 'https://editor.weweb.io' && event.origin != 'https://koosto.fr' && event.origin != 'https://www.koosto.fr') {
         alert('origine inconnue : ', event.origin);
@@ -10,20 +14,14 @@ window.addEventListener("message", function(event) {
         
     alert( "received: " + event.data );
     var data = JSON.parse(event.data);
-    if (!data) {
-        var data = {"lat":48,"lon":5,"mode":"driving","time":10};
-    }
-
     fetchIsochrone(carte, data);
 
     });
 
 
-    var lat = data.lat;
-    var lon = data.lon;
 
 function initialiserCarte() {
-    var carte = L.map('maCarte').setView([48, 5], 13);
+    var carte = L.map('maCarte').setView([lat, lon], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(carte);
