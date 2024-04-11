@@ -32,7 +32,7 @@ function fetchIsochrone(map, center) {
             fillColor: '#ffffff',
             fillOpacity: 0.01
         }).addTo(map);
-        map.setView([center.lat, center.long], 13);
+        map.setView([center.lat, center.lon], 13);
     })
     .catch(error => console.log('Erreur lors de la récupération des isochrones :', error));
 }
