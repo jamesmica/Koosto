@@ -14,18 +14,5 @@
     <div id="maCarte" style="height: 100vh; z-index: 1;"></div>
 
     <script src="script.js"></script>
-    <script>
-        window.addEventListener("message", function(event) {
-            if (event.origin != 'http://koosto.fr' && event.origin != 'http://editor.weweb.io' && event.origin != 'https://editor.weweb.io' && event.origin != 'https://koosto.fr' && event.origin != 'https://www.koosto.fr') {
-                alert('origine inconnue : ', event.origin);
-                return;
-            }
-                
-            alert( "received: " + event.data );
-            var data = JSON.parse(event.data);
-            fetchIsochrone(carte, data);
-
-            });
-    </script>
 </body>
 </html>
