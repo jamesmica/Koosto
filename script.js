@@ -25,9 +25,9 @@ window.addEventListener("message", async function(event) {
         lat = data.lat;
         lon = data.lon;
         if (data.mode=="en voiture") {
-            mode="driving";
+            mode = "driving";
         }  else {
-            mode="walking";
+            mode = "walking";
         } ;
         
         resetMap(); // Réinitialisez la carte et les données.
