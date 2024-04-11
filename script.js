@@ -54,12 +54,12 @@ function chargerEtablissements() {
 
 function fetchIsochrone(map, center) {
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
-    var url = `https://api.openrouteservice.org/v2/isochrones/driving-car?api_key=${apiKey}&start=${center.lng},${center.lat}&range=600`;
+    var url = `https://api.openrouteservice.org/v2/isochrones/driving-car?api_key=${apiKey}&start=${center.long},${center.lat}&range=600`;
 
     fetch(url)
     .then(response => response.json())
     .then(data => {
-        var isochronePath = data.features[0].geometry.coordinates[0].map(coord => ({ lat: coord[1], lng: coord[0] }));
+        var isochronePath = data.features[0].geometry.coordinates[0].map(coord => ({ lat: coord[1], long: coord[0] }));
         var isochronePolygon = new google.maps.Polygon({
             paths: isochronePath,
             strokeColor: '#FF0000',
@@ -73,10 +73,8 @@ function fetchIsochrone(map, center) {
     .catch(error => console.log('Erreur lors de la récupération des isochrones :', error));
 }
 
-// Assurez-vous que cette fonction est appelée une fois que la carte doit être initialisée
 initialiserCarte();
 
-// Assurez-vous que cette partie est correcte et que votre HTML inclut une div avec l'id 'maCarte'
 function initialiserCarte() {
     carte = L.map('maCarte').setView([48.8566, 2.3522], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -93,7 +91,7 @@ function geocoderAdresse(adresse, infos) {
         if (data.features && data.features.length > 0) {
             const lat = data.features[0].geometry.coordinates[1];
             const lon = data.features[0].geometry.coordinates[0];
-            afficherSurCarte(lat, lon, infos); // Passez les infos à la fonction afficherSurCarte
+            afficherSurCarte(lat, lon, infos);
         } else {
             console.log('Aucun résultat trouvé pour l\'adresse:', adresse);
         }
@@ -101,8 +99,6 @@ function geocoderAdresse(adresse, infos) {
     .catch(error => console.error('Erreur de géocodage:', error));
 }
 
-
-// Fonction pour afficher sur la carte
 function afficherSurCarte(lat, lon, adresse) {
     L.marker([lat, lon]).addTo(carte)
       .bindPopup(adresse)
