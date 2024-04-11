@@ -34,9 +34,27 @@ function fetchIsochrone(map, center) {
             fillOpacity: 0.01
         }).addTo(map);
         map.setView([center.lat, center.lon], 13);
+
+        const url = `https://api-adresse.data.gouv.fr/reverse/?lon=${center.lon}&lat=${center.lat}`;
+
+        return fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.features.length > 0) {
+                    const adresse = data.features[0];
+                    const codeINSEE = adresse.properties.citycode;
+                    alert(codeINSEE);
+                    return codeINSEE;
+                } else {
+                    throw new Error('Aucun résultat trouvé');
+                }
+            })
+            .catch(error => console.error('Erreur de géocodage:', error));
+
     })
     .catch(error => console.log('Erreur lors de la récupération des isochrones :', error));
 }
+
 
 
 
