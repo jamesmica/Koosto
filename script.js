@@ -4,7 +4,7 @@ var lon;
 var currentIsochrone;
 let codesINSEE = new Set();
 var codes;
-var grillePoints;
+var grillePoints = [];
 
 
 
@@ -26,6 +26,7 @@ window.addEventListener("message", async function(event) {
         
         resetMap(); // Réinitialisez la carte et les données.
         codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
+        grillePoints = [];
         await chargerIsochroneEtListerCommunes(); // Assurez-vous que cette fonction gère correctement les promesses.
     } catch (error) {
         console.error("Erreur lors du traitement de l'événement message:", error);
