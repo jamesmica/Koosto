@@ -1,3 +1,11 @@
+function initialiserCarte() {
+    var carte = L.map('maCarte').setView([48.8566, 2.3522], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(carte);
+    return carte;
+}
+
 function fetchIsochrone(map, center) {
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
     var minutes = 10; // Durée en minutes pour l'isochrone
@@ -7,7 +15,7 @@ function fetchIsochrone(map, center) {
     alert('mode :',center.mode);
 
     var url = `https://api.mapbox.com/isochrone/v1/mapbox/${center.mode}/${center.lon},${center.lat}?contours_minutes=${minutes}&polygons=true&access_token=${apiKey}`;
-
+    var isochronePolygon = null;
     fetch(url)
     .then(response => response.json())
     .then(data => {
@@ -25,14 +33,6 @@ function fetchIsochrone(map, center) {
         }).addTo(map);
     })
     .catch(error => console.log('Erreur lors de la récupération des isochrones :', error));
-}
-
-function initialiserCarte() {
-    var carte = L.map('maCarte').setView([48.8566, 2.3522], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(carte);
-    return carte;
 }
 
 // Initialise la carte
