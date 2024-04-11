@@ -10,11 +10,7 @@ function fetchIsochrone(map, center) {
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
     var minutes = 10; // Durée en minutes pour l'isochrone
 
-    alert('lat :',center.lat);
-    alert('lon :',center.lon);
-    alert('mode :',center.mode);
-
-    var url = `https://api.mapbox.com/isochrone/v1/mapbox/${center.mode}/${center.lon},${center.lat}?contours_minutes=${minutes}&polygons=true&access_token=${apiKey}`;
+    var url = `https://api.mapbox.com/isochrone/v1/mapbox/${center.mode}/${center.lon},${center.lat}?contours_minutes=${center.time || minutes}&polygons=true&access_token=${apiKey}`;
     var isochronePolygon = null;
     fetch(url)
     .then(response => response.json())
