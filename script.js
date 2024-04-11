@@ -33,6 +33,9 @@ window.addEventListener("message", function(event) {
         lon = data.lon;
         
         // Appeler les fonctions dépendantes des nouvelles valeurs de `data`, `lat`, et `lon`
+        
+    fetchIsochrone(carte, data); // Assurez-vous que `carte` est défini correctement avant cet appel
+    chargerIsochroneEtListerCommunes(); // Cette fonction doit utiliser `lat` et `lon` indirectement via `data`
 
     } catch (error) {
         console.error("Erreur lors du traitement de l'événement message:", error);
@@ -222,7 +225,5 @@ async function chargerEtablissements(codesINSEE) {
         }
     }
 
-    fetchIsochrone(carte, data); // Assurez-vous que `carte` est défini correctement avant cet appel
-    chargerIsochroneEtListerCommunes(); // Cette fonction doit utiliser `lat` et `lon` indirectement via `data`
     
 
