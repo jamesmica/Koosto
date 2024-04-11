@@ -16,9 +16,8 @@
     <script src="script.js"></script>
     <script>
         window.addEventListener("message", function(event) {
-            if (event.origin != 'http://koosto.fr' && event.origin != 'http://editor.weweb.io' && event.origin != 'https://editor.weweb.io' && event.origin != 'https://koosto.fr' && event.origin != 'https://www.koosto.fr/medecin-generaliste/simulateur-business-plan/') {
+            if (event.origin != 'http://koosto.fr' && event.origin != 'http://editor.weweb.io' && event.origin != 'https://editor.weweb.io' && event.origin != 'https://koosto.fr' && event.origin != 'https://www.koosto.fr') {
                 alert(event.origin);
-                alert('COOOOOOOOOORS');
                 return;
             }
             alert( "received: " + event.data );
