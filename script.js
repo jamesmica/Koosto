@@ -24,7 +24,6 @@ window.addEventListener("message", function(event) {
         lon = data.lon;
         
         // Appeler les fonctions dépendantes des nouvelles valeurs de `data`, `lat`, et `lon`
-        initialiserCarte();
         fetchIsochrone(carte, data); // Assurez-vous que `carte` est défini correctement avant cet appel
         chargerIsochroneEtListerCommunes(); // Cette fonction doit utiliser `lat` et `lon` indirectement via `data`
     } catch (error) {
@@ -33,33 +32,16 @@ window.addEventListener("message", function(event) {
 });
 
 
+
+
 function initialiserCarte() {
-    // Sélectionne le conteneur parent et le conteneur de la carte existant
-    var conteneurParent = document.getElementById('carteConteneur');
-    var carteExistante = document.getElementById('maCarte');
-    
-    // Supprime le conteneur de la carte existant s'il existe
-    if (carteExistante) {
-        conteneurParent.removeChild(carteExistante);
-    }
-
-    // Crée un nouveau conteneur pour la carte et l'ajoute au conteneur parent
-    var nouveauConteneurCarte = document.createElement('div');
-    nouveauConteneurCarte.id = 'maCarte';
-    nouveauConteneurCarte.style.height = '100vh'; // Assurez-vous de définir la hauteur
-    conteneurParent.appendChild(nouveauConteneurCarte);
-
-    // Initialise une nouvelle carte dans le nouveau conteneur
     var carte = L.map('maCarte').setView([lat, lon], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(carte);
     return carte;
 }
-
-// Réinitialiser et recréer la carte initialement
 var carte = initialiserCarte();
-
 function fetchIsochrone(map, center) {
     // console.log('fetchIsochrone(map, center)');
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
