@@ -133,6 +133,7 @@ async function listerCommunesCouvertesParIsochrone(isochrone) {
 
 
 async function chargerIsochroneEtListerCommunes() {
+    codes = null;
     try {
         await fetchIsochrone(carte, {"lat":data.lat,"lon":data.lon,"mode":"driving","time":10});
         const codes = await listerCommunesCouvertesParIsochrone(currentIsochrone);
@@ -166,6 +167,7 @@ async function chercherCoordonnees(adresse) {
 async function chargerEtablissements(codesINSEE) {
     const token = '354c9f77-e707-378c-b65c-b8b3e48d3da5'; // Utilisez votre token d'accès
     console.log('codes INSEE ',codesINSEE);
+    dataSirene = null;
     for (const codeINSEE of codesINSEE) {
         console.log('insee sirene :',codeINSEE);
         const urlSirene = `https://api.insee.fr/entreprises/sirene/V3.11/siret?q=codeCommuneEtablissement:${codeINSEE} AND periode(activitePrincipaleEtablissement:86.21Z)&nombre=100`;
