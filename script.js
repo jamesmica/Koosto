@@ -36,12 +36,27 @@ window.addEventListener("message", function(event) {
 
 
 function initialiserCarte() {
+    // Supprime l'ancienne carte si elle existe
+    var conteneur = document.getElementById('carteConteneur');
+    var carteExistante = document.getElementById('maCarte');
+    if (carteExistante) {
+        conteneur.removeChild(carteExistante);
+    }
+
+    // Crée un nouveau conteneur pour la carte
+    var nouveauConteneurCarte = document.createElement('div');
+    nouveauConteneurCarte.id = 'maCarte';
+    nouveauConteneurCarte.style.height = '400px'; // Assurez-vous de définir une hauteur
+    conteneur.appendChild(nouveauConteneurCarte);
+
+    // Crée une nouvelle instance de carte
     var carte = L.map('maCarte').setView([lat, lon], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(carte);
     return carte;
 }
+
 var carte = initialiserCarte();
 function fetchIsochrone(map, center) {
     // console.log('fetchIsochrone(map, center)');
