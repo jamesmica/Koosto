@@ -5,6 +5,7 @@ var currentIsochrone;
 let codesINSEE = new Set();
 var codes;
 var grillePoints = [];
+var mode;
 
 
 
