@@ -3,53 +3,22 @@ var lat;
 var lon;
 var currentIsochrone;
 let codesINSEE = new Set();
-let tousLesMarqueurs = [];
-
-
-
 
 var data = {"lat":48,"lon":5,"mode":"driving","time":10};
 var lat = data.lat;
 var lon = data.lon;
 
 window.addEventListener("message", function(event) {
-    if (!['http://koosto.fr', 'http://editor.weweb.io', 'https://editor.weweb.io', 'https://koosto.fr', 'https://www.koosto.fr'].includes(event.origin)) {
-        alert('Origine inconnue : ', event.origin);
+    if (event.origin != 'http://koosto.fr' && event.origin != 'http://editor.weweb.io' && event.origin != 'https://editor.weweb.io' && event.origin != 'https://koosto.fr' && event.origin != 'https://www.koosto.fr') {
+        alert('origine inconnue : ', event.origin);
         return;
     }
-    
-    // Effacer tous les marqueurs existants
-    if (tousLesMarqueurs) {
-        tousLesMarqueurs.forEach(marqueur => marqueur.remove());
-        tousLesMarqueurs = []; // Réinitialiser le tableau
-    }
-
-    
-    alert("Reçu : " + event.data);
-    try {
-        // Mettre à jour `data` avec les nouvelles valeurs
-        data = JSON.parse(event.data);
-        lat = data.lat;
-        lon = data.lon;
         
-        // Appeler les fonctions dépendantes des nouvelles valeurs de `data`, `lat`, et `lon`
-    resetMap();
-    fetchIsochrone(carte, data); // Assurez-vous que `carte` est défini correctement avant cet appel
-    chargerIsochroneEtListerCommunes(); // Cette fonction doit utiliser `lat` et `lon` indirectement via `data`
-
-    } catch (error) {
-        console.error("Erreur lors du traitement de l'événement message:", error);
-    }
-});
-
-
-function resetMap() {
-    carte.eachLayer((layer) => {
-        if (!layer._url) { // Vérifie si la couche n'est pas une couche de tuiles basée sur l'URL
-            carte.removeLayer(layer);
-        }
+    alert( "received: " + event.data );
+    var data = JSON.parse(event.data);
+    fetchIsochrone(carte, data);
+    chargerIsochroneEtListerCommunes();
     });
-}
 
 
 
@@ -221,16 +190,12 @@ async function chargerEtablissements(codesINSEE) {
         }
     }
 
-    function afficherSurCarte(lat, lon, infos) {
-        if (lat && lon) {
-            const marqueur = L.marker([lat, lon]).addTo(carte)
-                .bindPopup(infos)
-                .openPopup();
-            tousLesMarqueurs.push(marqueur);
-        } else {
-            console.log("Coordonnées non disponibles pour l'établissement :", infos);
-        }
+function afficherSurCarte(lat, lon, infos) {
+    if (lat && lon) {
+        L.marker([lat, lon]).addTo(carte)
+            .bindPopup(infos)
+            .openPopup();
+    } else {
+        console.log("Coordonnées non disponibles pour l'établissement :", infos);
     }
-
-    
-
+}
