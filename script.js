@@ -4,21 +4,33 @@ var lon;
 var currentIsochrone;
 let codesINSEE = new Set();
 
+
+
 var data = {"lat":48,"lon":5,"mode":"driving","time":10};
 var lat = data.lat;
 var lon = data.lon;
 
 window.addEventListener("message", function(event) {
-    if (event.origin != 'http://koosto.fr' && event.origin != 'http://editor.weweb.io' && event.origin != 'https://editor.weweb.io' && event.origin != 'https://koosto.fr' && event.origin != 'https://www.koosto.fr') {
-        alert('origine inconnue : ', event.origin);
+    if (!['http://koosto.fr', 'http://editor.weweb.io', 'https://editor.weweb.io', 'https://koosto.fr', 'https://www.koosto.fr'].includes(event.origin)) {
+        alert('Origine inconnue : ', event.origin);
         return;
     }
+    
+    alert("Reçu : " + event.data);
+    try {
+        // Mettre à jour `data` avec les nouvelles valeurs
+        data = JSON.parse(event.data);
+        lat = data.lat;
+        lon = data.lon;
         
-    alert( "received: " + event.data );
-    var data = JSON.parse(event.data);
-    fetchIsochrone(carte, data);
-    chargerIsochroneEtListerCommunes();
-    });
+        // Appeler les fonctions dépendantes des nouvelles valeurs de `data`, `lat`, et `lon`
+        fetchIsochrone(carte, data); // Assurez-vous que `carte` est défini correctement avant cet appel
+        chargerIsochroneEtListerCommunes(); // Cette fonction doit utiliser `lat` et `lon` indirectement via `data`
+    } catch (error) {
+        console.error("Erreur lors du traitement de l'événement message:", error);
+    }
+});
+
 
 
 
@@ -199,3 +211,4 @@ function afficherSurCarte(lat, lon, infos) {
         console.log("Coordonnées non disponibles pour l'établissement :", infos);
     }
 }
+
