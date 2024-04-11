@@ -1,10 +1,10 @@
 var data;
+var lat;
+var lon;
 var currentIsochrone;
 let codesINSEE = new Set();
 
 var data = {"lat":48,"lon":5,"mode":"driving","time":10};
-var lat = data.lat;
-var lon = data.lon;
 
 window.addEventListener("message", function(event) {
     if (event.origin != 'http://koosto.fr' && event.origin != 'http://editor.weweb.io' && event.origin != 'https://editor.weweb.io' && event.origin != 'https://koosto.fr' && event.origin != 'https://www.koosto.fr') {
@@ -14,6 +14,8 @@ window.addEventListener("message", function(event) {
         
     alert( "received: " + event.data );
     var data = JSON.parse(event.data);
+    lat = data.lat;
+    lon = data.lon;
     fetchIsochrone(carte, data);
     chargerIsochroneEtListerCommunes();
     });
