@@ -4,6 +4,7 @@ var lon;
 var currentIsochrone;
 let codesINSEE = new Set();
 var codes;
+var grillePoints;
 
 
 
@@ -105,7 +106,8 @@ function creerGrillePointsEtAfficherSurCarte(isochrone, pas, map) {
 }
 
 async function listerCommunesCouvertesParIsochrone(isochrone) {
-    let grillePoints = creerGrillePointsEtAfficherSurCarte(currentIsochrone, 0.005, carte);
+    grillePoints = null;
+    let grillePoints = creerGrillePointsEtAfficherSurCarte(isochrone, 0.005, carte);
     for (let point of grillePoints) {
         const url = `https://api-adresse.data.gouv.fr/reverse/?lon=${point[1]}&lat=${point[0]}`;
         try {
