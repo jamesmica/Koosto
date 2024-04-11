@@ -12,7 +12,7 @@ var data = {"lat":48,"lon":5,"mode":"driving","time":10};
 var lat = data.lat;
 var lon = data.lon;
 
-window.addEventListener("message", function(event) {
+window.addEventListener("message", async function(event) {
     if (!['http://koosto.fr', 'http://editor.weweb.io', 'https://editor.weweb.io', 'https://koosto.fr', 'https://www.koosto.fr'].includes(event.origin)) {
         alert('Origine inconnue : ', event.origin);
         return;
@@ -20,15 +20,13 @@ window.addEventListener("message", function(event) {
     
     console.log("Reçu : " + event.data);
     try {
-        // Mettre à jour `data` avec les nouvelles valeurs
         data = JSON.parse(event.data);
         lat = data.lat;
         lon = data.lon;
         
-        // Appeler les fonctions dépendantes des nouvelles valeurs de `data`, `lat`, et `lon`
-        resetMap();
-        fetchIsochrone(carte, data); // Assurez-vous que `carte` est défini correctement avant cet appel
-        chargerIsochroneEtListerCommunes(); // Cette fonction doit utiliser `lat` et `lon` indirectement via `data`
+        resetMap(); // Réinitialisez la carte et les données.
+        codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
+        await chargerIsochroneEtListerCommunes(); // Assurez-vous que cette fonction gère correctement les promesses.
     } catch (error) {
         console.error("Erreur lors du traitement de l'événement message:", error);
     }
@@ -36,11 +34,15 @@ window.addEventListener("message", function(event) {
 
 function resetMap() {
     carte.eachLayer((layer) => {
-        if (!layer._url) { // Vérifie si la couche n'est pas une couche de tuiles basée sur l'URL
+        if (!layer._url) { // Supprimez toutes les couches sauf la couche de tuiles basée sur l'URL.
             carte.removeLayer(layer);
         }
     });
+    if (currentIsochrone) {
+        currentIsochrone.remove(); // Assurez-vous de supprimer l'isochrone actuel s'il existe.
+    }
 }
+
 
 
 
