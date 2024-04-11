@@ -24,12 +24,22 @@ window.addEventListener("message", function(event) {
         lon = data.lon;
         
         // Appeler les fonctions dépendantes des nouvelles valeurs de `data`, `lat`, et `lon`
+        resetMap();
         fetchIsochrone(carte, data); // Assurez-vous que `carte` est défini correctement avant cet appel
         chargerIsochroneEtListerCommunes(); // Cette fonction doit utiliser `lat` et `lon` indirectement via `data`
     } catch (error) {
         console.error("Erreur lors du traitement de l'événement message:", error);
     }
 });
+
+function resetMap() {
+    carte.eachLayer((layer) => {
+        if (!layer._url) { // Vérifie si la couche n'est pas une couche de tuiles basée sur l'URL
+            carte.removeLayer(layer);
+        }
+    });
+}
+
 
 
 
@@ -123,7 +133,7 @@ async function chargerIsochroneEtListerCommunes() {
     try {
         await fetchIsochrone(carte, {"lat":data.lat,"lon":data.lon,"mode":"driving","time":10});
         codes = null;
-        const codes = await listerCommunesCouvertesParIsochrone(currentIsochrone);
+        var codes = await listerCommunesCouvertesParIsochrone(currentIsochrone);
         console.log("Codes INSEE des communes touchées:", codes);
         await chargerEtablissements(codes);
     } catch (error) {
