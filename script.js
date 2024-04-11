@@ -122,6 +122,7 @@ async function listerCommunesCouvertesParIsochrone(isochrone) {
 async function chargerIsochroneEtListerCommunes() {
     try {
         await fetchIsochrone(carte, {"lat":data.lat,"lon":data.lon,"mode":"driving","time":10});
+        codes = null;
         const codes = await listerCommunesCouvertesParIsochrone(currentIsochrone);
         console.log("Codes INSEE des communes touchées:", codes);
         await chargerEtablissements(codes);
