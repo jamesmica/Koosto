@@ -3,6 +3,7 @@ var lat;
 var lon;
 var currentIsochrone;
 let codesINSEE = new Set();
+var codes;
 
 
 
