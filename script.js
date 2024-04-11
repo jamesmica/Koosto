@@ -23,6 +23,11 @@ window.addEventListener("message", async function(event) {
         data = JSON.parse(event.data);
         lat = data.lat;
         lon = data.lon;
+        if (mode=="en voiture") {
+            "driving"
+        }  else {
+            mode=="walking"
+        } ;
         
         resetMap(); // Réinitialisez la carte et les données.
         codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
@@ -137,7 +142,7 @@ async function listerCommunesCouvertesParIsochrone(isochrone) {
 
 async function chargerIsochroneEtListerCommunes() {
     try {
-        await fetchIsochrone(carte, {"lat":data.lat,"lon":data.lon,"mode":"driving","time":10});
+        await fetchIsochrone(carte, {"lat":data.lat,"lon":data.lon,"mode":mode,"time":10});
         codes = null;
         var codes = await listerCommunesCouvertesParIsochrone(currentIsochrone);
         console.log("Codes INSEE des communes touchées:", codes);
