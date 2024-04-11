@@ -46,7 +46,7 @@ function initialiserCarte() {
     // Crée un nouveau conteneur pour la carte et l'ajoute au conteneur parent
     var nouveauConteneurCarte = document.createElement('div');
     nouveauConteneurCarte.id = 'maCarte';
-    nouveauConteneurCarte.style.height = '400px'; // Assurez-vous de définir la hauteur
+    nouveauConteneurCarte.style.height = '100vh'; // Assurez-vous de définir la hauteur
     conteneurParent.appendChild(nouveauConteneurCarte);
 
     // Initialise une nouvelle carte dans le nouveau conteneur
