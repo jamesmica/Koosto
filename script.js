@@ -3,6 +3,8 @@ var lat;
 var lon;
 var currentIsochrone;
 let codesINSEE = new Set();
+let tousLesMarqueurs = [];
+
 
 var data = {"lat":48,"lon":5,"mode":"driving","time":10};
 var lat = data.lat;
@@ -13,6 +15,10 @@ window.addEventListener("message", function(event) {
         alert('Origine inconnue : ', event.origin);
         return;
     }
+    
+    // Effacer tous les marqueurs existants
+    tousLesMarqueurs.forEach(marqueur => marqueur.remove());
+    tousLesMarqueurs = []; // Réinitialiser le tableau
     
     alert("Reçu : " + event.data);
     try {
@@ -28,6 +34,7 @@ window.addEventListener("message", function(event) {
         console.error("Erreur lors du traitement de l'événement message:", error);
     }
 });
+
 
 
 
@@ -200,13 +207,15 @@ async function chargerEtablissements(codesINSEE) {
         }
     }
 
-function afficherSurCarte(lat, lon, infos) {
-    if (lat && lon) {
-        L.marker([lat, lon]).addTo(carte)
-            .bindPopup(infos)
-            .openPopup();
-    } else {
-        console.log("Coordonnées non disponibles pour l'établissement :", infos);
+    function afficherSurCarte(lat, lon, infos) {
+        if (lat && lon) {
+            const marqueur = L.marker([lat, lon]).addTo(carte)
+                .bindPopup(infos)
+                .openPopup();
+            tousLesMarqueurs.push(marqueur);
+        } else {
+            console.log("Coordonnées non disponibles pour l'établissement :", infos);
+        }
     }
-}
+    
 
