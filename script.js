@@ -4,8 +4,9 @@ function fetchIsochrone(map, center) {
 
     alert('lat :',center.lat);
     alert('lon :',center.lon);
+    alert('mode :',center.mode);
 
-    var url = `https://api.mapbox.com/isochrone/v1/mapbox/walking/${center.lon},${center.lat}?contours_minutes=${minutes}&polygons=true&access_token=${apiKey}`;
+    var url = `https://api.mapbox.com/isochrone/v1/mapbox/${center.mode}/${center.lon},${center.lat}?contours_minutes=${minutes}&polygons=true&access_token=${apiKey}`;
 
     fetch(url)
     .then(response => response.json())
