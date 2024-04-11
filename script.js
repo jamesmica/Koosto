@@ -33,7 +33,7 @@ window.addEventListener("message", function(event) {
         lon = data.lon;
         
         // Appeler les fonctions dépendantes des nouvelles valeurs de `data`, `lat`, et `lon`
-    
+    resetMap();
     fetchIsochrone(carte, data); // Assurez-vous que `carte` est défini correctement avant cet appel
     chargerIsochroneEtListerCommunes(); // Cette fonction doit utiliser `lat` et `lon` indirectement via `data`
 
