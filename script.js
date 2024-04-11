@@ -1,3 +1,49 @@
+function fetchIsochrone(map, center) {
+    var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
+    var minutes = 10; // Durée en minutes pour l'isochrone
+
+    var url = `https://api.mapbox.com/isochrone/v1/mapbox/walking/${center.long},${center.lat}?contours_minutes=${minutes}&polygons=true&access_token=${apiKey}`;
+
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {
+        // Le premier feature contient les coordonnées de l'isochrone
+        var coords = data.features[0].geometry.coordinates[0];
+        var latLngs = coords.map(coord => ([coord[1], coord[0]]));
+
+        // Utiliser Leaflet pour tracer l'isochrone sur la carte
+        var isochronePolygon = L.polygon(latLngs, {
+            color: '#FF0000',
+            weight: 2,
+            opacity: 0.8,
+            fillColor: '#FF0000',
+            fillOpacity: 0.35
+        }).addTo(map);
+    })
+    .catch(error => console.log('Erreur lors de la récupération des isochrones :', error));
+}
+
+function initialiserCarte() {
+    var carte = L.map('maCarte').setView([48.8566, 2.3522], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(carte);
+    return carte;
+}
+
+// Initialise la carte
+var carte = initialiserCarte();
+
+
+
+
+
+
+
+
+
+
+
 function chargerEtablissements() {
     const codeCommune = document.getElementById('codeCommuneInput').value;
     const activiteEtab = document.getElementById('codeNAF').value;
@@ -50,36 +96,6 @@ function chargerEtablissements() {
     } else {
         alert('Veuillez entrer un code de commune.');
     }
-}
-
-function fetchIsochrone(map, center) {
-    var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
-    var url = `https://api.openrouteservice.org/v2/isochrones/driving-car?api_key=${apiKey}&start=${center.lng},${center.lat}&range=600`;
-
-    fetch(url)
-    .then(response => response.json())
-    .then(data => {
-        var isochronePath = data.features[0].geometry.coordinates[0].map(coord => ({ lat: coord[1], long: coord[0] }));
-        var isochronePolygon = new google.maps.Polygon({
-            paths: isochronePath,
-            strokeColor: '#FF0000',
-            strokeOpacity: 0.8,
-            strokeWeight: 2,
-            fillColor: '#FF0000',
-            fillOpacity: 0.35
-        });
-        isochronePolygon.setMap(map);
-    })
-    .catch(error => console.log('Erreur lors de la récupération des isochrones :', error));
-}
-
-initialiserCarte();
-
-function initialiserCarte() {
-    carte = L.map('maCarte').setView([48.8566, 2.3522], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(carte);
 }
 
 function geocoderAdresse(adresse, infos) {
