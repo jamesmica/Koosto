@@ -33,23 +33,23 @@ window.addEventListener("message", function(event) {
 });
 
 
-
-
 function initialiserCarte() {
-    // Supprime l'ancienne carte si elle existe
-    var conteneur = document.getElementById('carteConteneur');
+    // Sélectionne le conteneur parent et le conteneur de la carte existant
+    var conteneurParent = document.getElementById('carteConteneur');
     var carteExistante = document.getElementById('maCarte');
+    
+    // Supprime le conteneur de la carte existant s'il existe
     if (carteExistante) {
-        conteneur.removeChild(carteExistante);
+        conteneurParent.removeChild(carteExistante);
     }
 
-    // Crée un nouveau conteneur pour la carte
+    // Crée un nouveau conteneur pour la carte et l'ajoute au conteneur parent
     var nouveauConteneurCarte = document.createElement('div');
     nouveauConteneurCarte.id = 'maCarte';
-    nouveauConteneurCarte.style.height = '400px'; // Assurez-vous de définir une hauteur
-    conteneur.appendChild(nouveauConteneurCarte);
+    nouveauConteneurCarte.style.height = '400px'; // Assurez-vous de définir la hauteur
+    conteneurParent.appendChild(nouveauConteneurCarte);
 
-    // Crée une nouvelle instance de carte
+    // Initialise une nouvelle carte dans le nouveau conteneur
     var carte = L.map('maCarte').setView([lat, lon], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
@@ -57,7 +57,9 @@ function initialiserCarte() {
     return carte;
 }
 
+// Réinitialiser et recréer la carte initialement
 var carte = initialiserCarte();
+
 function fetchIsochrone(map, center) {
     // console.log('fetchIsochrone(map, center)');
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
