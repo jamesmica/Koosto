@@ -7,6 +7,7 @@ function initialiserCarte() {
 }
 
 var currentIsochrone = null;
+var carte = initialiserCarte();
 
 function fetchIsochrone(map, center) {
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
@@ -37,8 +38,6 @@ function fetchIsochrone(map, center) {
     .catch(error => console.log('Erreur lors de la récupération des isochrones :', error));
 }
 
-// Initialise la carte
-var carte = initialiserCarte();
 
 
 
@@ -48,14 +47,17 @@ var carte = initialiserCarte();
 
 
 
+
+function estDansIsochrone(point, isochrone) {
+    return turf.inside(point, isochrone);
+}
 
 
 function chargerEtablissements() {
-    const codeCommune = document.getElementById('codeCommuneInput').value;
-    const activiteEtab = document.getElementById('codeNAF').value;
+
     if (0===0) {
         const token = '2d4a57e2-c1de-3c24-981c-3309f92d139c'; // Utilisez votre token d'accès
-        const urlSirene = `https://api.insee.fr/entreprises/sirene/V3/siret?q=codeCommuneEtablissement:${codeCommune} AND periode(activitePrincipaleEtablissement:${activiteEtab})&date=2024-01-01`;
+        const urlSirene = `https://api.insee.fr/entreprises/sirene/V3/siret?q=codeCommuneEtablissement:${codeCommune} AND periode(activitePrincipaleEtablissement:86.21)&date=2024-01-01`;
         
         // Fetch des données SIRENE
         fetch(urlSirene, {
@@ -113,13 +115,23 @@ function geocoderAdresse(adresse, infos) {
         if (data.features && data.features.length > 0) {
             const lat = data.features[0].geometry.coordinates[1];
             const lon = data.features[0].geometry.coordinates[0];
-            afficherSurCarte(lat, lon, infos);
+            
+            // Créer un point GeoJSON pour l'établissement
+            var point = turf.point([lon, lat]);
+            
+            // Vérifier si le point est à l'intérieur de l'isochrone
+            if (currentIsochrone && estDansIsochrone(point, currentIsochrone.toGeoJSON())) {
+                afficherSurCarte(lat, lon, infos); // Seulement s'il est à l'intérieur de l'isochrone
+            } else {
+                console.log('Établissement hors de l\'isochrone:', adresse);
+            }
         } else {
             console.log('Aucun résultat trouvé pour l\'adresse:', adresse);
         }
     })
     .catch(error => console.error('Erreur de géocodage:', error));
 }
+
 
 function afficherSurCarte(lat, lon, adresse) {
     L.marker([lat, lon]).addTo(carte)

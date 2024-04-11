@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@turf/turf"></script>
+
 </head>
 <body>
     <input type="text" id="codeCommuneInput" placeholder="Entrez le code de la commune" style="position: fixed; z-index: 3; margin-left: 60px;">
@@ -24,8 +26,6 @@
                 
             alert( "received: " + event.data );
             var data = JSON.parse(event.data);
-            console.log('Latitude reçue:', data.lat);
-            console.log('Longitude reçue:', data.long);
             fetchIsochrone(carte, data);
 
             });
