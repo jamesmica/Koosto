@@ -3,6 +3,8 @@ var lat;
 var lon;
 var currentIsochrone;
 let codesINSEE = new Set();
+let tousLesMarqueurs = [];
+
 
 
 
@@ -16,6 +18,13 @@ window.addEventListener("message", function(event) {
         return;
     }
     
+    // Effacer tous les marqueurs existants
+    if (tousLesMarqueurs) {
+        tousLesMarqueurs.forEach(marqueur => marqueur.remove());
+        tousLesMarqueurs = []; // Réinitialiser le tableau
+    }
+
+    
     alert("Reçu : " + event.data);
     try {
         // Mettre à jour `data` avec les nouvelles valeurs
@@ -24,12 +33,12 @@ window.addEventListener("message", function(event) {
         lon = data.lon;
         
         // Appeler les fonctions dépendantes des nouvelles valeurs de `data`, `lat`, et `lon`
-        fetchIsochrone(carte, data); // Assurez-vous que `carte` est défini correctement avant cet appel
-        chargerIsochroneEtListerCommunes(); // Cette fonction doit utiliser `lat` et `lon` indirectement via `data`
+
     } catch (error) {
         console.error("Erreur lors du traitement de l'événement message:", error);
     }
 });
+
 
 
 
@@ -202,13 +211,18 @@ async function chargerEtablissements(codesINSEE) {
         }
     }
 
-function afficherSurCarte(lat, lon, infos) {
-    if (lat && lon) {
-        L.marker([lat, lon]).addTo(carte)
-            .bindPopup(infos)
-            .openPopup();
-    } else {
-        console.log("Coordonnées non disponibles pour l'établissement :", infos);
+    function afficherSurCarte(lat, lon, infos) {
+        if (lat && lon) {
+            const marqueur = L.marker([lat, lon]).addTo(carte)
+                .bindPopup(infos)
+                .openPopup();
+            tousLesMarqueurs.push(marqueur);
+        } else {
+            console.log("Coordonnées non disponibles pour l'établissement :", infos);
+        }
     }
-}
+
+    fetchIsochrone(carte, data); // Assurez-vous que `carte` est défini correctement avant cet appel
+    chargerIsochroneEtListerCommunes(); // Cette fonction doit utiliser `lat` et `lon` indirectement via `data`
+    
 
