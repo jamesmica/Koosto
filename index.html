@@ -18,11 +18,16 @@
     <script>
         window.addEventListener("message", function(event) {
             if (event.origin != 'http://koosto.fr' && event.origin != 'http://editor.weweb.io' && event.origin != 'https://editor.weweb.io' && event.origin != 'https://koosto.fr' && event.origin != 'https://www.koosto.fr') {
-                alert(event.origin);
+                alert('origine inconnue : ', event.origin);
                 return;
             }
+                
             alert( "received: " + event.data );
-            console.log('ok');
+            var data = JSON.parse(event.data);
+            console.log('Latitude reçue:', data.lat);
+            console.log('Longitude reçue:', data.long);
+            fetchIsochrone(map, data);
+
             });
     </script>
 </body>

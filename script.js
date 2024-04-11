@@ -52,6 +52,27 @@ function chargerEtablissements() {
     }
 }
 
+function fetchIsochrone(map, center) {
+    var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
+    var url = `https://api.openrouteservice.org/v2/isochrones/driving-car?api_key=${apiKey}&start=${center.lng},${center.lat}&range=600`;
+
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {
+        var isochronePath = data.features[0].geometry.coordinates[0].map(coord => ({ lat: coord[1], lng: coord[0] }));
+        var isochronePolygon = new google.maps.Polygon({
+            paths: isochronePath,
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.35
+        });
+        isochronePolygon.setMap(map);
+    })
+    .catch(error => console.log('Erreur lors de la récupération des isochrones :', error));
+}
+
 // Assurez-vous que cette fonction est appelée une fois que la carte doit être initialisée
 initialiserCarte();
 
