@@ -10,6 +10,9 @@ window.addEventListener("message", function(event) {
         
     alert( "received: " + event.data );
     var data = JSON.parse(event.data);
+    if (!data) {
+        var data = {"lat":48,"lon":5,"mode":"driving","time":10};
+    }
 
     fetchIsochrone(carte, data);
 
@@ -20,7 +23,7 @@ window.addEventListener("message", function(event) {
     var lon = data.lon;
 
 function initialiserCarte() {
-    var carte = L.map('maCarte').setView([lat, lon], 13);
+    var carte = L.map('maCarte').setView([48, 5], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(carte);
