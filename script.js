@@ -16,7 +16,7 @@ window.addEventListener("message", function(event) {
         return;
     }
     
-    alert("Reçu : " + event.data);
+    console.log("Reçu : " + event.data);
     try {
         // Mettre à jour `data` avec les nouvelles valeurs
         data = JSON.parse(event.data);
