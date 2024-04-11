@@ -24,10 +24,10 @@ window.addEventListener("message", async function(event) {
         data = JSON.parse(event.data);
         lat = data.lat;
         lon = data.lon;
-        if (mode=="en voiture") {
-            "driving"
+        if (data.mode=="en voiture") {
+            mode="driving";
         }  else {
-            mode=="walking"
+            mode="walking";
         } ;
         
         resetMap(); // Réinitialisez la carte et les données.
