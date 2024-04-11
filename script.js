@@ -28,8 +28,8 @@ function fetchIsochrone(map, center) {
             color: '#FF0000',
             weight: 2,
             opacity: 0.8,
-            fillColor: '#FF0000',
-            fillOpacity: 0.35
+            fillColor: '#ffffff',
+            fillOpacity: 0.01
         }).addTo(map);
     })
     .catch(error => console.log('Erreur lors de la récupération des isochrones :', error));
