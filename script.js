@@ -33,7 +33,7 @@ window.addEventListener("message", function(event) {
         lon = data.lon;
         
         // Appeler les fonctions dépendantes des nouvelles valeurs de `data`, `lat`, et `lon`
-    initialiserCarte();
+    
     fetchIsochrone(carte, data); // Assurez-vous que `carte` est défini correctement avant cet appel
     chargerIsochroneEtListerCommunes(); // Cette fonction doit utiliser `lat` et `lon` indirectement via `data`
 
@@ -43,6 +43,13 @@ window.addEventListener("message", function(event) {
 });
 
 
+function resetMap() {
+    carte.eachLayer((layer) => {
+        if (!layer._url) { // Vérifie si la couche n'est pas une couche de tuiles basée sur l'URL
+            carte.removeLayer(layer);
+        }
+    });
+}
 
 
 
