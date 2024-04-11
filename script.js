@@ -6,6 +6,8 @@ function initialiserCarte() {
     return carte;
 }
 
+var currentIsochrone = null;
+
 function fetchIsochrone(map, center) {
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
     var minutes = 10; // Durée en minutes pour l'isochrone
@@ -16,17 +18,21 @@ function fetchIsochrone(map, center) {
     .then(response => response.json())
     .then(data => {
         // Le premier feature contient les coordonnées de l'isochrone
+        if (currentIsochrone) {
+            currentIsochrone.remove();
+        }
         var coords = data.features[0].geometry.coordinates[0];
         var latLngs = coords.map(coord => ([coord[1], coord[0]]));
 
         // Utiliser Leaflet pour tracer l'isochrone sur la carte
-        var isochronePolygon = L.polygon(latLngs, {
+        currentIsochrone = L.polygon(latLngs, {
             color: '#FF0000',
             weight: 2,
             opacity: 0.8,
             fillColor: '#ffffff',
             fillOpacity: 0.01
         }).addTo(map);
+        map.setView([center.lat, center.long], 13);
     })
     .catch(error => console.log('Erreur lors de la récupération des isochrones :', error));
 }
