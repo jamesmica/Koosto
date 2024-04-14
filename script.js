@@ -21,12 +21,14 @@ window.addEventListener("message", async function(event) {
         alert('Origine inconnue : ', event.origin);
         return;
     }
+
+    data = JSON.parse(event.data);
+    lat = data.lat;
+    lon = data.lon;
     
     console.log("Reçu : " + event.data);
         try {
-            data = JSON.parse(event.data);
-            lat = data.lat;
-            lon = data.lon;
+
             await chargerIsochroneEtListerCommunes();
             await updateMap(); // Call updateMap here to add the geoJSON to the map as soon as it's loaded
     
