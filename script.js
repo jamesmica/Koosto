@@ -43,7 +43,8 @@ window.addEventListener("message", async function(event) {
         resetMap(); // Réinitialisez la carte et les données.
         codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
         grillePoints = [];
-        await chargerIsochroneEtListerCommunes(); // Assurez-vous que cette fonction gère correctement les promesses.
+        await chargerIsochroneEtListerCommunes();
+        await updateMap(); // Assurez-vous que cette fonction gère correctement les promesses.
 
     } catch (error) {
         console.error("Erreur lors du traitement de l'événement message:", error);
@@ -378,7 +379,7 @@ function afficherSurCarte(lat, lon, infos) {
             weight: 2,
             opacity: 1,
             pane: 'markerPane'  // Ajoutez vos marqueurs au nouveau pane
-        }).bindPopup(infos).addTo(carte);
+        }).addTo(carte).bindPopup(infos);
     } else {
         console.log("Coordonnées non disponibles pour l'établissement :", infos);
     }
