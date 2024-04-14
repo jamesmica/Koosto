@@ -116,6 +116,7 @@ function fetchIsochrone(map, center) {
             var latLngs = coords.map(coord => ([coord[1], coord[0]]));
 
             currentIsochrone = L.polygon(latLngs, { color: '#FF0000', weight: 2, opacity: 0.8, fillColor: '#ffffff', fillOpacity: 0.01 }).addTo(map);
+            currentIsochrone.bringToFront();
             // console.log(currentIsochrone); 
             map.setView([center.lat, center.lon], 13);
             resolve(currentIsochrone); // Résoudre la promesse avec l'isochrone
