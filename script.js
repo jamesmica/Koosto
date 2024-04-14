@@ -21,13 +21,15 @@ window.addEventListener("message", async function(event) {
         alert('Origine inconnue : ', event.origin);
         return;
     }
-    
+    resetMap(); // Réinitialisez la carte et les données.
+    codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
+    grillePoints = [];
     console.log("Reçu : " + event.data);
         try {
             data = JSON.parse(event.data);
             lat = data.lat;
             lon = data.lon;
-            
+
             await chargerIsochroneEtListerCommunes();
             await updateMap(); // Call updateMap here to add the geoJSON to the map as soon as it's loaded
     
