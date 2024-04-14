@@ -261,25 +261,49 @@ async function chargerEtablissements(codesINSEE) {
     }
 
 
-    function updateMap() {
-        if (!geojsonData) {
-            console.error("GeoJSON data is not loaded yet");
+    async function updateMap() {
+        if (!codesINSEE || codesINSEE.size === 0) {
+            console.error("Aucun code INSEE disponible pour charger les GeoJSON.");
             return;
         }
-        console.log(geojsonData);
-
-        // Clear existing layers
+    
+        // Supprimer les anciennes couches GeoJSON
         carte.eachLayer(layer => {
             if (layer instanceof L.GeoJSON) {
-                map.removeLayer(layer);
+                carte.removeLayer(layer);
             }
         });
-
-        L.geoJSON(geojsonData, { 
-      style: style,
-      onEachFeature: onEachFeature // Ajouter la fonction onEachFeature ici
-  }).addTo(carte);
-}
+    
+        // Charger les nouveaux fichiers GeoJSON pour chaque code INSEE
+        for (let codeINSEE of codesINSEE) {
+            try {
+                const geojsonUrl = `shp/${codeINSEE}.geojson`;
+                const response = await fetch(geojsonUrl);
+                const data = await response.json();
+                
+                // Ajouter la donnée GeoJSON à la carte
+                L.geoJSON(data, { 
+                    style: style,
+                    onEachFeature: onEachFeature
+                }).addTo(carte);
+            } catch (error) {
+                console.error(`Erreur lors du chargement du GeoJSON pour le code INSEE ${codeINSEE}:`, error);
+            }
+        }
+    }
+    
+    // Vous pouvez également envisager de déplacer la logique de chargement des GeoJSON dans une fonction séparée pour une meilleure organisation du code
+    async function loadGeoJSONForINSEECode(codeINSEE) {
+        const geojsonUrl = `shp/${codeINSEE}.geojson`;
+        try {
+            const response = await fetch(geojsonUrl);
+            if (!response.ok) throw new Error(`HTTP status ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    }
+    
 
 function onEachFeature(feature, layer) {
   if (feature.properties) {
