@@ -23,25 +23,34 @@ window.addEventListener("message", async function(event) {
     }
     
     console.log("Reçu : " + event.data);
-    try {
-        data = JSON.parse(event.data);
-        lat = data.lat;
-        lon = data.lon;
-        console.log(data.mode);
-        if (data.mode=="driving") {
-            mode = "driving";
-        }  else {
-            mode = "walking";
-        } ;
-        
-        resetMap(); // Réinitialisez la carte et les données.
-        codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
-        grillePoints = [];
-        await chargerIsochroneEtListerCommunes(); // Assurez-vous que cette fonction gère correctement les promesses.
-
-    } catch (error) {
-        console.error("Erreur lors du traitement de l'événement message:", error);
-    }
+        try {
+            data = JSON.parse(event.data);
+            lat = data.lat;
+            lon = data.lon;
+            
+            await chargerIsochroneEtListerCommunes();
+            await updateMap(); // Call updateMap here to add the geoJSON to the map as soon as it's loaded
+    
+            const legend = L.control({position: 'bottomright'});
+            legend.onAdd = function (carte) {
+                const div = L.DomUtil.create('div', 'legend');
+                const grades = [0, 600, 800, 1000, 1500]; // Remplacez par les seuils appropriés pour votre indice
+                const labels = [];
+                // Générez un label avec un carré coloré pour chaque intervalle d'indice
+                for (let i = 0; i < grades.length; i++) {
+                    const from = grades[i];
+                    const to = grades[i + 1];
+                    let color = getColor(from + (to - from) / 2); // Utilisez votre fonction pour obtenir la couleur
+                    labels.push('<i style="background:' + color + '"></i> ' + from + (to ? '&ndash;' + to : '+'));
+                }
+                div.innerHTML = labels.join('<br>');
+                return div;
+            };
+            legend.addTo(carte);
+    
+        } catch (error) {
+            console.error('Error loading the GeoJSON or updating the map:', error);
+        }
 });
 
 function resetMap() {
