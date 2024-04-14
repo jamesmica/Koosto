@@ -6,12 +6,15 @@ let codesINSEE = new Set();
 var codes;
 var grillePoints = [];
 var mode;
+var geojsonData;
 
 
 
 var data = {"lat":48,"lon":5,"mode":"driving","time":10};
 var lat = data.lat;
 var lon = data.lon;
+
+
 
 window.addEventListener("message", async function(event) {
     if (!['http://koosto.fr', 'http://editor.weweb.io', 'https://editor.weweb.io', 'https://koosto.fr', 'https://www.koosto.fr'].includes(event.origin)) {
@@ -34,6 +37,38 @@ window.addEventListener("message", async function(event) {
         codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
         grillePoints = [];
         await chargerIsochroneEtListerCommunes(); // Assurez-vous que cette fonction gère correctement les promesses.
+
+
+                    fetch('shp/94080.geojson').then(response => response.json()).then(data => {
+                        geojsonData = data; // Store the GeoJSON data
+                        updateMap(); // Call updateMap here to add the geoJSON to the map as soon as it's loaded
+                    }).catch(error => console.error('Error loading the GeoJSON:', error));
+
+
+                    const legend = L.control({position: 'bottomright'});
+
+                    legend.onAdd = function (carte) {
+                        const div = L.DomUtil.create('div', 'legend');
+                        const grades = [0,600, 800, 1000, 1500]; // Remplacez par les seuils appropriés pour votre indice
+                        const labels = [];
+
+                        // Générez un label avec un carré coloré pour chaque intervalle d'indice
+                        for (let i = 0; i < grades.length; i++) {
+                        const from = grades[i];
+                        const to = grades[i + 1];
+
+                        let color = getColor(from + (to - from) / 2); // Utilisez votre fonction pour obtenir la couleur
+                        labels.push(
+                            '<i style="background:' + color + '"></i> ' +
+                            from + (to ? '&ndash;' + to : '+'));
+                        }
+
+                        div.innerHTML = labels.join('<br>');
+                        return div;
+                    };
+
+                    legend.addTo(carte);
+
     } catch (error) {
         console.error("Erreur lors du traitement de l'événement message:", error);
     }
@@ -225,6 +260,75 @@ async function chargerEtablissements(codesINSEE) {
         }
     }
 
+
+    function updateMap() {
+        if (!geojsonData) {
+            console.error("GeoJSON data is not loaded yet");
+            return;
+        }
+        console.log(geojsonData);
+
+        // Clear existing layers
+        carte.eachLayer(layer => {
+            if (layer instanceof L.GeoJSON) {
+                map.removeLayer(layer);
+            }
+        });
+
+        L.geoJSON(geojsonData, { 
+      style: style,
+      onEachFeature: onEachFeature // Ajouter la fonction onEachFeature ici
+  }).addTo(carte);
+}
+
+function onEachFeature(feature, layer) {
+  if (feature.properties) {
+    // Calculs préliminaires pour éviter de répéter le calcul
+    let population = feature.properties.ind || 'Non spécifié';
+    let densite = population * 1/0.04;
+    let tailleMenage = feature.properties.men ? (population / feature.properties.men).toFixed(2) : 'Non spécifié';
+    let revenusIndividus = feature.properties.ind_snv ? (feature.properties.ind_snv / population).toFixed(0) : 'Non spécifié';
+    let pauvreteMenages = feature.properties.men_pauv && feature.properties.men ? (feature.properties.men_pauv / feature.properties.men * 100).toFixed(2) + '%' : 'Non spécifié';
+
+    var popupContent = "<div style='font-size: 12px;'>";
+    popupContent += "<strong>Code INSEE: </strong>" + feature.properties.lcog_geo + "<br>";
+    popupContent += "<strong>Population: </strong>" + population.toFixed(0) + "<br>";
+    popupContent += "<strong>Densité : </strong>" + densite.toFixed(0) + " hab/km²<br>";
+    popupContent += "<strong>Taille typique d'un ménage: </strong>" + tailleMenage + " pers./ménage<br>";
+    popupContent += "<strong>Revenus des individus: </strong>" + revenusIndividus + " €<br>";
+    popupContent += "<strong>Pauvreté des ménages: </strong>" + pauvreteMenages + "<br>";
+    popupContent += "</div>";
+
+    layer.bindPopup(popupContent);
+  }
+}
+
+
+    function getColor(d) {
+//   console.log(d); // Afficher la valeur d'indice pour laquelle une couleur est demandée
+  return d > 1500 ? '#000099' :
+         d > 1000 ? '#1919FF' :
+         d > 800 ? '#6666FF' :
+         d > 600 ? '#9999FF' :
+         d < 601 ? '#E5E5FF' :
+                     '#000099'; // Utilisez des seuils appropriés à vos données
+}
+
+
+// Utilisez une fonction similaire pour définir le style de vos entités GeoJSON en fonction de l'indice
+function style(feature) {
+//   console.log(feature.properties.Ind_snv, feature.properties.Ind); // Afficher les valeurs dans la console
+  var indice = feature.properties.ind;
+//   console.log(indice); // Afficher le résultat de la division
+  return {
+    fillColor: getColor(indice),
+    weight: 1,
+    opacity: 1,
+    color: 'white',
+    fillOpacity: 0.7
+  };
+}
+
 function afficherSurCarte(lat, lon, infos) {
     if (lat && lon) {
         L.marker([lat, lon]).addTo(carte)
@@ -234,4 +338,6 @@ function afficherSurCarte(lat, lon, infos) {
         console.log("Coordonnées non disponibles pour l'établissement :", infos);
     }
 }
+
+
 
