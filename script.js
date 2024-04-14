@@ -27,7 +27,8 @@ window.addEventListener("message", async function(event) {
         data = JSON.parse(event.data);
         lat = data.lat;
         lon = data.lon;
-        if (data.mode=="en voiture") {
+        console.log(data.mode);
+        if (data.mode=="driving") {
             mode = "driving";
         }  else {
             mode = "walking";
