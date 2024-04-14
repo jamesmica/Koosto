@@ -55,18 +55,24 @@ function resetMap() {
     }
 }
 
-
-
-
-
-
 function initialiserCarte() {
-    var carte = L.map('maCarte').setView([lat, lon], 13);
+    var carte = L.map('maCarte', {
+        center: [lat, lon],
+        zoom: 13
+    });
+
+    // Créer un nouveau pane pour les marqueurs avec un zIndex élevé
+    carte.createPane('markerPane');
+    carte.getPane('markerPane').style.zIndex = 650; // Les tuiles ont habituellement un zIndex de 400
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(carte);
+
     return carte;
 }
+
+
 
 var carte = initialiserCarte();
 
@@ -285,32 +291,30 @@ async function chargerEtablissements(codesINSEE) {
             return;
         }
     
-        // Supprimer les anciennes couches GeoJSON
         carte.eachLayer(layer => {
             if (layer instanceof L.GeoJSON) {
                 carte.removeLayer(layer);
             }
         });
     
-        // Charger les nouveaux fichiers GeoJSON pour chaque code INSEE
         for (let codeINSEE of codesINSEE) {
             try {
                 const geojsonUrl = `shp/${codeINSEE}.geojson`;
                 const response = await fetch(geojsonUrl);
                 const data = await response.json();
-                const aSC = await afficherSurCarte();
                 
-                // Ajouter la donnée GeoJSON à la carte
                 L.geoJSON(data, { 
                     style: style,
+                    zIndex: 1,
                     onEachFeature: onEachFeature
                 }).addTo(carte);
-                currentIsochrone.bringToFront();
             } catch (error) {
                 console.error(`Erreur lors du chargement du GeoJSON pour le code INSEE ${codeINSEE}:`, error);
             }
         }
+        currentIsochrone.bringToFront(); // S'assurer que le groupe de marqueurs reste au premier plan
     }
+    
     
 
 function onEachFeature(feature, layer) {
@@ -363,21 +367,17 @@ function style(feature) {
 
 function afficherSurCarte(lat, lon, infos) {
     if (lat && lon) {
-        var markers = L.circleMarker([lat, lon], {
+        var marker = L.circleMarker([lat, lon], {
             radius: 4,
             color: '#000000',
             fillColor: '#000000',
             fillOpacity: 0.75,
             weight: 2,
-            opacity: 1
-          }).addTo(carte) // Assurez-vous d'ajouter le marqueur à la carte
-            .bindPopup(infos);
-            markers.bringToFront();
-            currentIsochrone.bringToFront();
+            opacity: 1,
+            pane: 'markerPane'  // Ajoutez vos marqueurs au nouveau pane
+        }).bindPopup(infos).addTo(carte);
     } else {
         console.log("Coordonnées non disponibles pour l'établissement :", infos);
     }
 }
-
-
 
