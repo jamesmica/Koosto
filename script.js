@@ -100,11 +100,9 @@ function initialiserCarte() {
 }
 var carte = initialiserCarte();
 function fetchIsochrone(map, center) {
-    // console.log('fetchIsochrone(map, center)');
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
     var url = `https://api.mapbox.com/isochrone/v1/mapbox/${center.mode}/${center.lon},${center.lat}?contours_minutes=${center.time || 10}&polygons=true&access_token=${apiKey}`;
 
-    // Retourner une promesse qui se résout une fois que l'isochrone est chargé
     return new Promise((resolve, reject) => {
         fetch(url)
         .then(response => response.json())
@@ -115,18 +113,25 @@ function fetchIsochrone(map, center) {
             var coords = data.features[0].geometry.coordinates[0];
             var latLngs = coords.map(coord => ([coord[1], coord[0]]));
 
-            currentIsochrone = L.polygon(latLngs, { color: '#FF0000', weight: 2, opacity: 0.8, fillColor: '#ffffff', fillOpacity: 0.01 }).addTo(map);
-            
-            // console.log(currentIsochrone); 
+            currentIsochrone = L.polygon(latLngs, {
+                color: '#FF0000',
+                weight: 2,
+                opacity: 0.8,
+                fillColor: '#ffffff',
+                fillOpacity: 0.01,
+                interactive: false  // Désactiver les événements de clic sur cette couche
+            }).addTo(map);
+
             map.setView([center.lat, center.lon], 13);
-            resolve(currentIsochrone); // Résoudre la promesse avec l'isochrone
+            resolve(currentIsochrone);
         })
         .catch(error => {
             console.log('Erreur lors de la récupération des isochrones :', error);
-            reject(error); // Rejeter la promesse en cas d'erreur
+            reject(error);
         });
     });
 }
+
 
 
 function creerGrillePointsEtAfficherSurCarte(isochrone, pas, map) {
