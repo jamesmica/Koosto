@@ -359,12 +359,14 @@ function style(feature) {
 function afficherSurCarte(lat, lon, infos) {
     if (lat && lon) {
         L.circleMarker([lat, lon], {
-            radius : 15,
-            color  : '#00ffff',
-            opacity: 0.75,
-          })
-            .bindPopup(infos)
-            .openPopup();
+            radius: 15,
+            color: '#00ffff',
+            fillColor: '#00ffff',
+            fillOpacity: 0.75,
+            weight: 2,
+            opacity: 1
+          }).addTo(carte) // Assurez-vous d'ajouter le marqueur à la carte
+            .bindPopup(infos);
 
             currentIsochrone.bringToFront();
     } else {
