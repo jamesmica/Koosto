@@ -14,21 +14,22 @@ var data = {"lat":48.86666,"lon":2.333333,"mode":"driving","time":10};
 var lat = data.lat;
 var lon = data.lon;
 
-
-
 window.addEventListener("message", async function(event) {
     if (!['http://koosto.fr', 'http://editor.weweb.io', 'https://editor.weweb.io', 'https://koosto.fr', 'https://www.koosto.fr'].includes(event.origin)) {
         alert('Origine inconnue : ', event.origin);
         return;
     }
 
+    resetMap(); // Réinitialisez la carte et les données.
+    codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
+    grillePoints = [];
+
     data = JSON.parse(event.data);
     lat = data.lat;
     lon = data.lon;
-    
+
     console.log("Reçu : " + event.data);
         try {
-
             await chargerIsochroneEtListerCommunes();
             await updateMap(); // Call updateMap here to add the geoJSON to the map as soon as it's loaded
     
@@ -66,10 +67,7 @@ function resetMap() {
 }
 
 function initialiserCarte() {
-    var carte = L.map('maCarte', {
-        center: [lat, lon],
-        zoom: 13
-    });
+    var carte = L.map('maCarte').setView([lat, lon], 13);
 
     // Créer un nouveau pane pour les marqueurs avec un zIndex élevé
     carte.createPane('markerPane');
