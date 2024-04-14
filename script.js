@@ -357,7 +357,11 @@ function style(feature) {
 
 function afficherSurCarte(lat, lon, infos) {
     if (lat && lon) {
-        L.marker([lat, lon]).addTo(carte)
+        L.circleMarker([node.lat, node.lon], {
+            radius : 15,
+            color  : '#00ffff',
+            opacity: 0.75,
+          })
             .bindPopup(infos)
             .openPopup();
     } else {
