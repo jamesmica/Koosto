@@ -10,7 +10,7 @@ var geojsonData;
 
 
 
-var data = {"lat":48,"lon":5,"mode":"driving","time":10};
+var data = {"lat":48.86666,"lon":2.333333,"mode":"driving","time":10};
 var lat = data.lat;
 var lon = data.lon;
 
@@ -357,7 +357,7 @@ function style(feature) {
 
 function afficherSurCarte(lat, lon, infos) {
     if (lat && lon) {
-        L.circleMarker([node.lat, node.lon], {
+        L.circleMarker([lat, lon], {
             radius : 15,
             color  : '#00ffff',
             opacity: 0.75,
