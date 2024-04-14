@@ -7,7 +7,7 @@ var codes;
 var grillePoints = [];
 var mode;
 var geojsonData;
-
+var markers;
 
 
 var data = {"lat":48.86666,"lon":2.333333,"mode":"driving","time":10};
@@ -39,37 +39,6 @@ window.addEventListener("message", async function(event) {
         grillePoints = [];
         await chargerIsochroneEtListerCommunes(); // Assurez-vous que cette fonction gère correctement les promesses.
 
-
-                    fetch('shp/94080.geojson').then(response => response.json()).then(data => {
-                        geojsonData = data; // Store the GeoJSON data
-                        updateMap(); // Call updateMap here to add the geoJSON to the map as soon as it's loaded
-                    }).catch(error => console.error('Error loading the GeoJSON:', error));
-
-
-                    const legend = L.control({position: 'bottomright'});
-
-                    legend.onAdd = function (carte) {
-                        const div = L.DomUtil.create('div', 'legend');
-                        const grades = [0,600, 800, 1000, 1500]; // Remplacez par les seuils appropriés pour votre indice
-                        const labels = [];
-
-                        // Générez un label avec un carré coloré pour chaque intervalle d'indice
-                        for (let i = 0; i < grades.length; i++) {
-                        const from = grades[i];
-                        const to = grades[i + 1];
-
-                        let color = getColor(from + (to - from) / 2); // Utilisez votre fonction pour obtenir la couleur
-                        labels.push(
-                            '<i style="background:' + color + '"></i> ' +
-                            from + (to ? '&ndash;' + to : '+'));
-                        }
-
-                        div.innerHTML = labels.join('<br>');
-                        return div;
-                    };
-
-                    legend.addTo(carte);
-
     } catch (error) {
         console.error("Erreur lors du traitement de l'événement message:", error);
     }
@@ -98,7 +67,49 @@ function initialiserCarte() {
     }).addTo(carte);
     return carte;
 }
+
 var carte = initialiserCarte();
+
+async function updateMapData() {
+    lat = parseFloat(document.getElementById('latitude').value);
+    lon = parseFloat(document.getElementById('longitude').value);
+    mode = document.getElementById('mode').value;
+
+    resetMap(); // Réinitialisez la carte et les données.
+    codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
+    grillePoints = [];
+
+    try {
+        await chargerIsochroneEtListerCommunes();
+        await updateMap(); // Call updateMap here to add the geoJSON to the map as soon as it's loaded
+
+        const legend = L.control({position: 'bottomright'});
+        legend.onAdd = function (carte) {
+            const div = L.DomUtil.create('div', 'legend');
+            const grades = [0, 600, 800, 1000, 1500]; // Remplacez par les seuils appropriés pour votre indice
+            const labels = [];
+            // Générez un label avec un carré coloré pour chaque intervalle d'indice
+            for (let i = 0; i < grades.length; i++) {
+                const from = grades[i];
+                const to = grades[i + 1];
+                let color = getColor(from + (to - from) / 2); // Utilisez votre fonction pour obtenir la couleur
+                labels.push('<i style="background:' + color + '"></i> ' + from + (to ? '&ndash;' + to : '+'));
+            }
+            div.innerHTML = labels.join('<br>');
+            return div;
+        };
+        legend.addTo(carte);
+
+    } catch (error) {
+        console.error('Error loading the GeoJSON or updating the map:', error);
+    }
+}
+
+// Ajout des écouteurs d'événements sur les champs d'input
+document.getElementById('latitude').addEventListener('change', updateMapData);
+document.getElementById('longitude').addEventListener('change', updateMapData);
+document.getElementById('mode').addEventListener('change', updateMapData);
+
 function fetchIsochrone(map, center) {
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
     var url = `https://api.mapbox.com/isochrone/v1/mapbox/${center.mode}/${center.lon},${center.lat}?contours_minutes=${center.time || 10}&polygons=true&access_token=${apiKey}`;
@@ -287,6 +298,7 @@ async function chargerEtablissements(codesINSEE) {
                 const geojsonUrl = `shp/${codeINSEE}.geojson`;
                 const response = await fetch(geojsonUrl);
                 const data = await response.json();
+                const aSC = await afficherSurCarte();
                 
                 // Ajouter la donnée GeoJSON à la carte
                 L.geoJSON(data, { 
@@ -297,18 +309,6 @@ async function chargerEtablissements(codesINSEE) {
             } catch (error) {
                 console.error(`Erreur lors du chargement du GeoJSON pour le code INSEE ${codeINSEE}:`, error);
             }
-        }
-    }
-    
-    // Vous pouvez également envisager de déplacer la logique de chargement des GeoJSON dans une fonction séparée pour une meilleure organisation du code
-    async function loadGeoJSONForINSEECode(codeINSEE) {
-        const geojsonUrl = `shp/${codeINSEE}.geojson`;
-        try {
-            const response = await fetch(geojsonUrl);
-            if (!response.ok) throw new Error(`HTTP status ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            throw error;
         }
     }
     
@@ -363,7 +363,7 @@ function style(feature) {
 
 function afficherSurCarte(lat, lon, infos) {
     if (lat && lon) {
-        L.circleMarker([lat, lon], {
+        var markers = L.circleMarker([lat, lon], {
             radius: 4,
             color: '#000000',
             fillColor: '#000000',
@@ -371,9 +371,8 @@ function afficherSurCarte(lat, lon, infos) {
             weight: 2,
             opacity: 1
           }).addTo(carte) // Assurez-vous d'ajouter le marqueur à la carte
-            .bindPopup(infos)
-            .bringToFront();
-
+            .bindPopup(infos);
+            markers.bringToFront();
             currentIsochrone.bringToFront();
     } else {
         console.log("Coordonnées non disponibles pour l'établissement :", infos);
