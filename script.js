@@ -8,6 +8,7 @@ var grillePoints = [];
 var mode;
 var geojsonData;
 var markers;
+var dataCarreaux;
 
 
 var data = {"lat":48.86666,"lon":2.333333,"mode":"driving","time":10};
@@ -211,6 +212,9 @@ async function chargerIsochroneEtListerCommunes() {
         var codes = await listerCommunesCouvertesParIsochrone(currentIsochrone);
         console.log("Codes INSEE des communes touchées:", codes);
         await chargerEtablissements(codes);
+        console.log(dataCarreaux); // Pour s'assurer que dataCarreaux contient les bonnes données
+        calculateAndAlertStats(currentIsochrone, dataCarreaux);
+
     } catch (error) {
         console.error('Erreur:', error);
     }
@@ -305,9 +309,9 @@ async function chargerEtablissements(codesINSEE) {
             try {
                 const geojsonUrl = `shp/${codeINSEE}.geojson`;
                 const response = await fetch(geojsonUrl);
-                const data = await response.json();
+                dataCarreaux = await response.json();
                 
-                L.geoJSON(data, { 
+                L.geoJSON(dataCarreaux, { 
                     style: style,
                     zIndex: 1,
                     onEachFeature: onEachFeature
@@ -316,6 +320,9 @@ async function chargerEtablissements(codesINSEE) {
                 console.error(`Erreur lors du chargement du GeoJSON pour le code INSEE ${codeINSEE}:`, error);
             }
         }
+        console.log(dataCarreaux); // Pour s'assurer que dataCarreaux contient les bonnes données
+        calculateAndAlertStats(currentIsochrone, dataCarreaux);
+
         currentIsochrone.bringToFront(); // S'assurer que le groupe de marqueurs reste au premier plan
     }
     
@@ -385,3 +392,18 @@ function afficherSurCarte(lat, lon, infos) {
     }
 }
 
+async function calculateAndAlertStats(isochrone, geojsonData) {
+    let count = 0;
+    let sumInd = 0;
+    
+    geojsonData.features.forEach(feature => {
+      // Si un carreau intersecte avec l'isochrone, on le compte et on ajoute sa valeur 'ind'
+      if (turf.intersect(feature.geometry, isochrone.toGeoJSON())) {
+        count++;
+        sumInd += feature.properties.ind;
+      }
+    });
+  
+    alert(`Nombre de carreaux dans l'isochrone: ${count}, Somme de 'ind': ${sumInd}`);
+  }
+  
