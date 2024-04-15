@@ -8,6 +8,8 @@ var grillePoints = [];
 var mode;
 var markers;
 var dataCarreaux;
+var totalPointsInsideIsochrone = 0; // Initialiser à zéro au début
+
 
 
 var data = {"lat":48.86666,"lon":2.333333,"mode":"driving","time":10};
@@ -211,8 +213,6 @@ async function chargerIsochroneEtListerCommunes() {
         var codes = await listerCommunesCouvertesParIsochrone(currentIsochrone);
         console.log("Codes INSEE des communes touchées:", codes);
         await chargerEtablissements(codes);
-        console.log(dataCarreaux); // Pour s'assurer que dataCarreaux contient les bonnes données
-        await calculateAndAlertStats(currentIsochrone, dataCarreaux);
 
     } catch (error) {
         console.error('Erreur:', error);
@@ -241,9 +241,9 @@ async function chercherCoordonnees(adresse) {
 
 async function chargerEtablissements(codesINSEE) {
     const token = '354c9f77-e707-378c-b65c-b8b3e48d3da5'; // Utilisez votre token d'accès
-    console.log('codes INSEE ',codesINSEE);
+    console.log('codes INSEE ', codesINSEE);
     for (const codeINSEE of codesINSEE) {
-        console.log('insee sirene :',codeINSEE);
+        console.log('insee sirene :', codeINSEE);
         const urlSirene = `https://api.insee.fr/entreprises/sirene/V3.11/siret?q=codeCommuneEtablissement:${codeINSEE} AND periode(activitePrincipaleEtablissement:86.21Z)&nombre=100`;
 
         const response = await fetch(urlSirene, {
@@ -253,30 +253,28 @@ async function chargerEtablissements(codesINSEE) {
                 'Content-Type': 'application/json'
             }
         });
-        
+
         if (!response.ok) {
             console.error(`Erreur HTTP : ${response.status} ${codeINSEE}`);
+            continue;
         }
-        
-        // Vérifiez le type de contenu avant de parser en JSON
-        // const contentType = response.headers.get('content-type');
-        // if (!contentType || !contentType.includes('application/json')) {
-        //     console.error("La réponse n'est pas du JSON :", await response.text());
-        //     return;
-        // }
-        
-        const dataSirene = await response.json();
-            console.log(dataSirene);
 
-            if (dataSirene.etablissements && dataSirene.etablissements.length > 0) {
-                dataSirene.etablissements.forEach(etablissement => {
-                    if (etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement>0) {
+        const dataSirene = await response.json();
+        console.log("datasirene", dataSirene);
+
+        if (dataSirene.etablissements && dataSirene.etablissements.length > 0) {
+            dataSirene.etablissements.forEach(etablissement => {
+                if (etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement > 0 && etablissement.adresseEtablissement.coordonneeLambertOrdonneeEtablissement > 0) {
+                    let etabPoint = turf.point([etablissement.adresseEtablissement.coordonneeLambertOrdonneeEtablissement, etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement]);
+
+                    // Convertir les coordonnées Lambert en lat/lon si nécessaire ou utiliser la conversion directe pour le test
+                    // Vérifier si le point est à l'intérieur de l'isochrone
+                    if (currentIsochrone && turf.booleanPointInPolygon(etabPoint, currentIsochrone.toGeoJSON())) {
                         console.log(etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement);
                         const infos = `<strong>Établissement</strong><br>
                         Nom : ${etablissement.uniteLegale.nomUniteLegale} ${etablissement.uniteLegale.prenom1UniteLegale}<br>
                         Activité Principale : ${etablissement.periodesEtablissement[0].activitePrincipaleEtablissement}<br>
                         Adresse : ${etablissement.adresseEtablissement.numeroVoieEtablissement} ${etablissement.adresseEtablissement.typeVoieEtablissement} ${etablissement.adresseEtablissement.libelleVoieEtablissement}, ${etablissement.adresseEtablissement.codePostalEtablissement} ${etablissement.adresseEtablissement.libelleCommuneEtablissement}<br>
-                        Adresse : ${etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement}<br>
                         SIREN : ${etablissement.siret}`;
                         // Utiliser l'adresse géocodée si disponible ou géocoder l'adresse
                         afficherSurCarte(
@@ -285,11 +283,13 @@ async function chargerEtablissements(codesINSEE) {
                             infos
                         );
                     }
-
-                });
-            }
+                }
+            });
         }
     }
+    finalizeDisplay();
+}
+
 
     async function updateMap() {
         if (!codesINSEE || codesINSEE.size === 0) {
@@ -407,34 +407,28 @@ function style(feature) {
 
 function afficherSurCarte(lat, lon, infos) {
     if (lat && lon) {
-        var marker = L.circleMarker([lat, lon], {
-            radius: 4,
-            color: '#000000',
-            fillColor: '#000000',
-            fillOpacity: 0.75,
-            weight: 2,
-            opacity: 1,
-            pane: 'markerPane'  // Ajoutez vos marqueurs au nouveau pane
-        }).addTo(carte).bindPopup(infos);
+        let point = turf.point([lon, lat]);
+        if (currentIsochrone && turf.booleanPointInPolygon(point, currentIsochrone.toGeoJSON())) {
+            var marker = L.circleMarker([lat, lon], {
+                radius: 4,
+                color: '#000000',
+                fillColor: '#000000',
+                fillOpacity: 0.75,
+                weight: 2,
+                opacity: 1,
+                pane: 'markerPane'
+            }).addTo(carte).bindPopup(infos);
+
+            totalPointsInsideIsochrone += 1; // Incrémenter le compteur
+        } else {
+            console.log("Point hors de l'isochrone: ", lat, lon);
+        }
     } else {
         console.log("Coordonnées non disponibles pour l'établissement :", infos);
     }
 }
 
-// Votre fonction calculateAndAlertStats resterait inchangée, utilisant turf.intersect
-async function calculateAndAlertStats(isochrone, geojsonData) {
-
-    let count = 0;
-    let sumInd = 0;
-    geojsonData.features.forEach(feature => {
-        // Si un carreau intersecte avec l'isochrone, on le compte et on ajoute sa valeur 'ind'
-        if (turf.intersect(feature.geometry, isochrone.toGeoJSON())) {
-          count++;
-          sumInd += feature.properties.ind;
-        }
-      });
-
-    alert(`Nombre de carreaux à l'intérieur de l'isochrone: ${count}, Somme de 'ind': ${sumInd}`);
+async function finalizeDisplay() {
+    alert(`Nombre total de points à l'intérieur de l'isochrone : ${totalPointsInsideIsochrone}`);
+    totalPointsInsideIsochrone = 0; // Réinitialiser pour le prochain calcul
 }
-
-  
