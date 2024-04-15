@@ -438,7 +438,7 @@ async function finalizeDisplay() {
     console.log(dataToSend);
 
     // Send data to the parent window
-    window.parent.postMessage(dataToSend, '*'); // Replace '*' with the actual origin of the parent for security
+    window.parent.postMessage(dataToSend, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
 
     // Reset the counter for next use
     totalPointsInsideIsochrone = 0;
