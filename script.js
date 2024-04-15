@@ -10,6 +10,7 @@ var markers;
 var dataCarreaux;
 var totalPointsInsideIsochrone = 0; // Initialiser à zéro au début
 var sumInd = 0;
+var countTiles = 0;
 
 
 
@@ -299,7 +300,7 @@ async function chargerEtablissements(codesINSEE) {
         }
     
         let uniqueIds = new Set(); // Ensemble pour stocker les identifiants uniques
-        let count = 0; // Compteur pour le nombre de carreaux uniques
+        countTiles = 0; // Compteur pour le nombre de carreaux uniques
         let sumInd = 0; // Somme des valeurs de 'ind' pour les carreaux uniques
     
         // Supprimer toutes les couches GeoJSON existantes
@@ -331,7 +332,7 @@ async function chargerEtablissements(codesINSEE) {
             let idCar = feature.properties.idcar_200m;
             if (!uniqueIds.has(idCar) && turf.intersect(feature.geometry, currentIsochrone.toGeoJSON())) {
                 uniqueIds.add(idCar); // Ajouter l'identifiant au Set pour éviter les doublons
-                count++; // Incrémenter le compteur pour chaque carreau unique
+                countTiles++; // Incrémenter le compteur pour chaque carreau unique
                 sumInd += feature.properties.ind || 0; // Ajouter la valeur de 'ind' à la somme
                 return true;
             }
@@ -345,8 +346,23 @@ async function chargerEtablissements(codesINSEE) {
         }).addTo(carte);
     
         // Afficher le résultat final après le traitement de toutes les caractéristiques
-        alert(`Nombre de carreaux uniques à l'intérieur de l'isochrone: ${count}, Somme de 'ind' pour ces carreaux: ${sumInd}`);
+        alert(`Nombre de carreaux uniques à l'intérieur de l'isochrone: ${countTiles}, Somme de 'ind' pour ces carreaux: ${sumInd}`);
         
+        const dataToSend2 = {
+            type: 'pointsInsideIsochrone',
+            tiles: countTiles,
+            pop: sumInd
+        };
+    
+        console.log(dataToSend2);
+    
+        // Send data to the parent window
+        window.parent.postMessage(dataToSend2, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
+    
+        // Reset the counter for next use
+        countTiles = 0;
+        sumInd = 0;
+
         // Mettre l'isochrone au premier plan après avoir ajouté les carreaux
         if (currentIsochrone) {
             currentIsochrone.bringToFront();
