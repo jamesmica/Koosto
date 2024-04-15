@@ -430,5 +430,14 @@ function afficherSurCarte(lat, lon, infos) {
 
 async function finalizeDisplay() {
     alert(`Nombre total de points à l'intérieur de l'isochrone : ${totalPointsInsideIsochrone}`);
-    totalPointsInsideIsochrone = 0; // Réinitialiser pour le prochain calcul
+    const dataToSend = {
+        type: 'pointsInsideIsochrone',
+        count: totalPointsInsideIsochrone
+    };
+
+    // Send data to the parent window
+    window.parent.postMessage(dataToSend, '*'); // Replace '*' with the actual origin of the parent for security
+
+    // Reset the counter for next use
+    totalPointsInsideIsochrone = 0;
 }
