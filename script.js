@@ -9,7 +9,6 @@ var mode;
 var markers;
 var dataCarreaux;
 var totalPointsInsideIsochrone = 0; // Initialiser à zéro au début
-var tilesInsideIsochrone = 0;
 
 
 
@@ -346,20 +345,7 @@ async function chargerEtablissements(codesINSEE) {
     
         // Afficher le résultat final après le traitement de toutes les caractéristiques
         alert(`Nombre de carreaux uniques à l'intérieur de l'isochrone: ${count}, Somme de 'ind' pour ces carreaux: ${sumInd}`);
-        const dataToSend2 = {
-            type: 'tilesInsideIsochrone',
-            count: count,
-            pop: sumInd
-        };
-    
-        console.log(dataToSend2);
-    
-        // Send data to the parent window
-        window.parent.postMessage(dataToSend2, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
-    
-        // Reset the counter for next use
-        count = 0;
-        sumInd = 0;
+        
         // Mettre l'isochrone au premier plan après avoir ajouté les carreaux
         if (currentIsochrone) {
             currentIsochrone.bringToFront();
