@@ -435,6 +435,8 @@ async function finalizeDisplay() {
         count: totalPointsInsideIsochrone
     };
 
+    console.log(dataToSend);
+
     // Send data to the parent window
     window.parent.postMessage(dataToSend, '*'); // Replace '*' with the actual origin of the parent for security
 
