@@ -348,7 +348,7 @@ async function chargerEtablissements(codesINSEE) {
         alert(`Nombre de carreaux uniques à l'intérieur de l'isochrone: ${count}, Somme de 'ind' pour ces carreaux: ${sumInd}`);
         const dataToSend2 = {
             type: 'tilesInsideIsochrone',
-            count: count,
+            tiles: count,
             pop: sumInd
         };
     
