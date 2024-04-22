@@ -14,6 +14,7 @@ var countTiles = 0;
 
 
 
+
 var data = {"lat":48.86666,"lon":2.333333,"mode":"driving","time":10};
 var lat = data.lat;
 var lon = data.lon;
@@ -67,7 +68,11 @@ function resetMap() {
 }
 
 function initialiserCarte() {
-    var carte = L.map('maCarte').setView([lat, lon], 13);
+
+    var carte = L.map('maCarte', {
+        maxZoom: 18,   // Maximum zoom level that the user can zoom to
+        minZoom: 4     // Minimum zoom level that the user can zoom out to
+    }).setView([lat, lon], 13);
 
     // Créer un nouveau pane pour les marqueurs avec un zIndex élevé
     carte.createPane('markerPane');
@@ -112,7 +117,7 @@ async function updateMapData() {
             div.innerHTML = labels.join('<br>');
             return div;
         };
-        legend.addTo(carte);
+        // legend.addTo(carte);
 
     } catch (error) {
         console.error('Error loading the GeoJSON or updating the map:', error);
@@ -142,8 +147,8 @@ function fetchIsochrone(map, center) {
                 color: '#FF0000',
                 weight: 2,
                 opacity: 0.8,
-                fillColor: '#ffffff',
-                fillOpacity: 0.01,
+                fillColor: '#007aff',
+                fillOpacity: 0.3,
                 interactive: false  // Désactiver les événements de clic sur cette couche
             }).addTo(map);
 
@@ -262,29 +267,77 @@ async function chargerEtablissements(codesINSEE) {
         }
 
         const dataSirene = await response.json();
-        console.log("datasirene", dataSirene);
+        // console.log("datasirene", dataSirene);
+        // console.log('etablissement : ',dataSirene.etablissements);
+        var markersByCoord = {};
+// Définition des icônes avec différentes tailles pour différentes quantités d'informations
+var iconSingle = L.icon({
+    iconUrl: 'img/pin.png',
+    iconSize: [24, 24], // Taille standard pour un seul point
+    iconAnchor: [12, 24],
+    popupAnchor: [0, -24]
+});
 
+var iconMultiple = L.icon({
+    iconUrl: 'img/multipin.png', // Assurez-vous que cette image existe et est différente de pin.png
+    iconSize: [24, 24], // Taille standard pour un seul point
+    iconAnchor: [12, 24],
+    popupAnchor: [0, -24]
+});
+
+function addOrUpdateMarker(lat, lon, infos) {
+    if (!lat || !lon) {
+        console.log("Coordonnées non disponibles pour l'établissement :", infos);
+        return;
+    }
+
+    let point = turf.point([lon, lat]);
+    if (!(currentIsochrone && turf.booleanPointInPolygon(point, currentIsochrone.toGeoJSON()))) {
+        console.log("Point hors de l'isochrone: ", lat, lon);
+        return;
+    }
+
+    var coordKey = `${lat},${lon}`;
+    if (markersByCoord.hasOwnProperty(coordKey)) {
+        // Si un marqueur existe déjà, mettre à jour le popup et augmenter le compteur
+        var markerData = markersByCoord[coordKey];
+        var existingPopup = markerData.marker.getPopup();
+        markerData.count += 1;
+        existingPopup.setContent(existingPopup.getContent() + '<hr>' + infos);
+        // Changer l'icône si le nombre d'informations est supérieur à un
+        if (markerData.count > 1) {
+            markerData.marker.setIcon(iconMultiple);
+        }
+    } else {
+        // Créer un nouveau marqueur avec un popup
+        var marker = L.marker([lat, lon], {icon: iconSingle}).bindPopup(infos).addTo(carte);
+        // Stocker le marqueur et initialiser le compteur d'informations
+        markersByCoord[coordKey] = { marker: marker, count: 1 };
+        totalPointsInsideIsochrone +=1;
+    }
+}
+
+        
+        
+        
+        
+        // Intégration avec la fonction de traitement des établissements
         if (dataSirene.etablissements && dataSirene.etablissements.length > 0) {
             dataSirene.etablissements.forEach(etablissement => {
-                if (etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement > 0 && etablissement.adresseEtablissement.coordonneeLambertOrdonneeEtablissement > 0) {
-                    let etabPoint = turf.point([etablissement.adresseEtablissement.coordonneeLambertOrdonneeEtablissement, etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement]);
-
-                    // Convertir les coordonnées Lambert en lat/lon si nécessaire ou utiliser la conversion directe pour le test
-                    // Vérifier si le point est à l'intérieur de l'isochrone
-                    if (currentIsochrone && turf.booleanPointInPolygon(etabPoint, currentIsochrone.toGeoJSON())) {
-                        console.log(etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement);
-                        const infos = `<strong>Établissement</strong><br>
-                        Nom : ${etablissement.uniteLegale.nomUniteLegale} ${etablissement.uniteLegale.prenom1UniteLegale}<br>
-                        Activité Principale : ${etablissement.periodesEtablissement[0].activitePrincipaleEtablissement}<br>
-                        Adresse : ${etablissement.adresseEtablissement.numeroVoieEtablissement} ${etablissement.adresseEtablissement.typeVoieEtablissement} ${etablissement.adresseEtablissement.libelleVoieEtablissement}, ${etablissement.adresseEtablissement.codePostalEtablissement} ${etablissement.adresseEtablissement.libelleCommuneEtablissement}<br>
-                        SIREN : ${etablissement.siret}`;
-                        // Utiliser l'adresse géocodée si disponible ou géocoder l'adresse
-                        afficherSurCarte(
-                            etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement,
-                            etablissement.adresseEtablissement.coordonneeLambertOrdonneeEtablissement,
-                            infos
-                        );
-                    }
+                if (etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement > 0 &&
+                    etablissement.adresseEtablissement.coordonneeLambertOrdonneeEtablissement > 0) {
+                    
+                    // Conversion des coordonnées Lambert en lat/lon si nécessaire
+                    let lat = etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement;
+                    let lon = etablissement.adresseEtablissement.coordonneeLambertOrdonneeEtablissement;
+                    let infos = `
+                        ${etablissement.uniteLegale.nomUniteLegale || ''} ${etablissement.uniteLegale.prenom1UniteLegale || ''}<br>
+                        ${etablissement.adresseEtablissement.numeroVoieEtablissement || ''} ${etablissement.adresseEtablissement.typeVoieEtablissement || ''} ${etablissement.adresseEtablissement.libelleVoieEtablissement || ''}<br>
+                        ${etablissement.adresseEtablissement.codePostalEtablissement || ''} ${etablissement.adresseEtablissement.libelleCommuneEtablissement || ''}
+                    `;
+        
+                    // Ajouter ou mettre à jour les marqueurs sur la carte
+                    addOrUpdateMarker(lat, lon, infos);
                 }
             });
         }
@@ -340,13 +393,13 @@ async function chargerEtablissements(codesINSEE) {
         });
     
         // Créer et ajouter une nouvelle couche GeoJSON avec les caractéristiques filtrées
-        L.geoJSON({type: 'FeatureCollection', features: filteredFeatures}, { 
-            style: style,
-            onEachFeature: onEachFeature
-        }).addTo(carte);
+        // L.geoJSON({type: 'FeatureCollection', features: filteredFeatures}, { 
+        //     style: style,
+        //     onEachFeature: onEachFeature
+        // }).addTo(carte);
     
         // Afficher le résultat final après le traitement de toutes les caractéristiques
-        alert(`Nombre de carreaux uniques à l'intérieur de l'isochrone: ${countTiles}, Somme de 'ind' pour ces carreaux: ${sumInd}`);
+        console.log(`Nombre de carreaux uniques à l'intérieur de l'isochrone: ${countTiles}, Somme de 'ind' pour ces carreaux: ${sumInd}`);
         
         const dataToSend2 = {
             type: 'tilesInsideIsochrone',
@@ -370,83 +423,61 @@ async function chargerEtablissements(codesINSEE) {
     }
         
     
-    
-    
-    
+// function onEachFeature(feature, layer) {
+//   if (feature.properties) {
+//     // Calculs préliminaires pour éviter de répéter le calcul
+//     let population = feature.properties.ind || 'Non spécifié';
+//     let densite = population * 1/0.04;
+//     let tailleMenage = feature.properties.men ? (population / feature.properties.men).toFixed(2) : 'Non spécifié';
+//     let revenusIndividus = feature.properties.ind_snv ? (feature.properties.ind_snv / population).toFixed(0) : 'Non spécifié';
+//     let pauvreteMenages = feature.properties.men_pauv && feature.properties.men ? (feature.properties.men_pauv / feature.properties.men * 100).toFixed(2) + '%' : 'Non spécifié';
 
-function onEachFeature(feature, layer) {
-  if (feature.properties) {
-    // Calculs préliminaires pour éviter de répéter le calcul
-    let population = feature.properties.ind || 'Non spécifié';
-    let densite = population * 1/0.04;
-    let tailleMenage = feature.properties.men ? (population / feature.properties.men).toFixed(2) : 'Non spécifié';
-    let revenusIndividus = feature.properties.ind_snv ? (feature.properties.ind_snv / population).toFixed(0) : 'Non spécifié';
-    let pauvreteMenages = feature.properties.men_pauv && feature.properties.men ? (feature.properties.men_pauv / feature.properties.men * 100).toFixed(2) + '%' : 'Non spécifié';
+//     var popupContent = "<div style='font-size: 12px;'>";
+//     popupContent += "<strong>Code INSEE: </strong>" + feature.properties.lcog_geo + "<br>";
+//     popupContent += "<strong>Population: </strong>" + population.toFixed(0) + "<br>";
+//     popupContent += "<strong>Densité : </strong>" + densite.toFixed(0) + " hab/km²<br>";
+//     popupContent += "<strong>Taille typique d'un ménage: </strong>" + tailleMenage + " pers./ménage<br>";
+//     popupContent += "<strong>Revenus des individus: </strong>" + revenusIndividus + " €<br>";
+//     popupContent += "<strong>Pauvreté des ménages: </strong>" + pauvreteMenages + "<br>";
+//     popupContent += "</div>";
 
-    var popupContent = "<div style='font-size: 12px;'>";
-    popupContent += "<strong>Code INSEE: </strong>" + feature.properties.lcog_geo + "<br>";
-    popupContent += "<strong>Population: </strong>" + population.toFixed(0) + "<br>";
-    popupContent += "<strong>Densité : </strong>" + densite.toFixed(0) + " hab/km²<br>";
-    popupContent += "<strong>Taille typique d'un ménage: </strong>" + tailleMenage + " pers./ménage<br>";
-    popupContent += "<strong>Revenus des individus: </strong>" + revenusIndividus + " €<br>";
-    popupContent += "<strong>Pauvreté des ménages: </strong>" + pauvreteMenages + "<br>";
-    popupContent += "</div>";
-
-    layer.bindPopup(popupContent);
-  }
-}
+//     layer.bindPopup(popupContent);
+//   }
+// }
 
 
-    function getColor(d) {
-//   console.log(d); // Afficher la valeur d'indice pour laquelle une couleur est demandée
-  return d > 1500 ? '#000099' :
-         d > 1000 ? '#1919FF' :
-         d > 800 ? '#6666FF' :
-         d > 600 ? '#9999FF' :
-         d < 601 ? '#E5E5FF' :
-                     '#000099'; // Utilisez des seuils appropriés à vos données
-}
+//     function getColor(d) {
+// //   console.log(d); // Afficher la valeur d'indice pour laquelle une couleur est demandée
+//   return d > 1500 ? '#000099' :
+//          d > 1000 ? '#1919FF' :
+//          d > 800 ? '#6666FF' :
+//          d > 600 ? '#9999FF' :
+//          d < 601 ? '#E5E5FF' :
+//                      '#000099'; // Utilisez des seuils appropriés à vos données
+// }
 
 
-// Utilisez une fonction similaire pour définir le style de vos entités GeoJSON en fonction de l'indice
-function style(feature) {
-//   console.log(feature.properties.Ind_snv, feature.properties.Ind); // Afficher les valeurs dans la console
-  var indice = feature.properties.ind;
-//   console.log(indice); // Afficher le résultat de la division
-  return {
-    fillColor: getColor(indice),
-    weight: 1,
-    opacity: 1,
-    color: 'white',
-    fillOpacity: 0.7
-  };
-}
+// // Utilisez une fonction similaire pour définir le style de vos entités GeoJSON en fonction de l'indice
+// function style(feature) {
+// //   console.log(feature.properties.Ind_snv, feature.properties.Ind); // Afficher les valeurs dans la console
+//   var indice = feature.properties.ind;
+// //   console.log(indice); // Afficher le résultat de la division
+//   return {
+//     fillColor: getColor(indice),
+//     weight: 1,
+//     opacity: 1,
+//     color: 'white',
+//     fillOpacity: 0.7
+//   };
+// }
 
 function afficherSurCarte(lat, lon, infos) {
-    if (lat && lon) {
-        let point = turf.point([lon, lat]);
-        if (currentIsochrone && turf.booleanPointInPolygon(point, currentIsochrone.toGeoJSON())) {
-            var marker = L.circleMarker([lat, lon], {
-                radius: 4,
-                color: '#000000',
-                fillColor: '#000000',
-                fillOpacity: 0.75,
-                weight: 2,
-                opacity: 1,
-                pane: 'markerPane'
-            }).addTo(carte).bindPopup(infos);
-
-            totalPointsInsideIsochrone += 1; // Incrémenter le compteur
-        } else {
-            console.log("Point hors de l'isochrone: ", lat, lon);
-        }
-    } else {
-        console.log("Coordonnées non disponibles pour l'établissement :", infos);
-    }
+    
 }
 
+
 async function finalizeDisplay() {
-    alert(`Nombre total de points à l'intérieur de l'isochrone : ${totalPointsInsideIsochrone}`);
+    console.log(`Nombre total de points à l'intérieur de l'isochrone : ${totalPointsInsideIsochrone}`);
     const dataToSend = {
         type: 'pointsInsideIsochrone',
         count: totalPointsInsideIsochrone
