@@ -152,7 +152,8 @@ function fetchIsochrone(map, center) {
                 interactive: false  // Désactiver les événements de clic sur cette couche
             }).addTo(map);
 
-            map.setView([center.lat, center.lon], 13);
+            var bounds = currentIsochrone.getBounds();
+            carte.fitBounds(bounds);
             resolve(currentIsochrone);
         })
         .catch(error => {
@@ -333,7 +334,10 @@ function addOrUpdateMarker(lat, lon, infos) {
                     let infos = `
                         ${etablissement.uniteLegale.nomUniteLegale || ''} ${etablissement.uniteLegale.prenom1UniteLegale || ''}<br>
                         ${etablissement.adresseEtablissement.numeroVoieEtablissement || ''} ${etablissement.adresseEtablissement.typeVoieEtablissement || ''} ${etablissement.adresseEtablissement.libelleVoieEtablissement || ''}<br>
-                        ${etablissement.adresseEtablissement.codePostalEtablissement || ''} ${etablissement.adresseEtablissement.libelleCommuneEtablissement || ''}
+                        ${etablissement.adresseEtablissement.codePostalEtablissement || ''} ${etablissement.adresseEtablissement.libelleCommuneEtablissement || ''}<br>
+                        <a href="https://www.koosto.fr/tarifs">
+                        <button>Ce professionnel en détail</button>
+                        </a> 
                     `;
         
                     // Ajouter ou mettre à jour les marqueurs sur la carte
