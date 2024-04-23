@@ -264,6 +264,7 @@ function addOrUpdateMarker(lat, lon, infos) {
         if (markerData.count > 1) {
             markerData.marker.setIcon(iconMultiple);
         }
+        totalPointsInsideIsochrone +=1;
     } else {
         // Créer un nouveau marqueur avec un popup
         var marker = L.marker([lat, lon], {icon: iconSingle}).bindPopup(infos).addTo(carte);
