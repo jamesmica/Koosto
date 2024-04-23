@@ -12,9 +12,6 @@ var totalPointsInsideIsochrone = 0; // Initialiser à zéro au début
 var sumInd = 0;
 var countTiles = 0;
 
-
-
-
 var data = {"lat":48.86666,"lon":2.333333,"mode":"driving","time":10};
 var lat = data.lat;
 var lon = data.lon;
@@ -85,49 +82,7 @@ function initialiserCarte() {
     return carte;
 }
 
-
-
 var carte = initialiserCarte();
-
-// async function updateMapData() {
-//     lat = parseFloat(document.getElementById('latitude').value);
-//     lon = parseFloat(document.getElementById('longitude').value);
-//     mode = document.getElementById('mode').value;
-
-//     resetMap(); // Réinitialisez la carte et les données.
-//     codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
-//     grillePoints = [];
-
-//     try {
-//         await chargerIsochroneEtListerCommunes();
-//         await updateMap(); // Call updateMap here to add the geoJSON to the map as soon as it's loaded
-
-//         const legend = L.control({position: 'bottomright'});
-//         legend.onAdd = function (carte) {
-//             const div = L.DomUtil.create('div', 'legend');
-//             const grades = [0, 600, 800, 1000, 1500]; // Remplacez par les seuils appropriés pour votre indice
-//             const labels = [];
-//             // Générez un label avec un carré coloré pour chaque intervalle d'indice
-//             for (let i = 0; i < grades.length; i++) {
-//                 const from = grades[i];
-//                 const to = grades[i + 1];
-//                 let color = getColor(from + (to - from) / 2); // Utilisez votre fonction pour obtenir la couleur
-//                 labels.push('<i style="background:' + color + '"></i> ' + from + (to ? '&ndash;' + to : '+'));
-//             }
-//             div.innerHTML = labels.join('<br>');
-//             return div;
-//         };
-//         // legend.addTo(carte);
-
-//     } catch (error) {
-//         console.error('Error loading the GeoJSON or updating the map:', error);
-//     }
-// }
-
-// Ajout des écouteurs d'événements sur les champs d'input
-// document.getElementById('latitude').addEventListener('change', updateMapData);
-// document.getElementById('longitude').addEventListener('change', updateMapData);
-// document.getElementById('mode').addEventListener('change', updateMapData);
 
 function fetchIsochrone(map, center) {
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
@@ -371,7 +326,7 @@ function addOrUpdateMarker(lat, lon, infos) {
         let allFeatures = []; // Pour stocker toutes les caractéristiques de tous les GeoJSON
         for (let codeINSEE of codesINSEE) {
             try {
-                const geojsonUrl = `shp/${codeINSEE}.geojson`;
+                const geojsonUrl = `shp_test/${codeINSEE}.geojson`;
                 const response = await fetch(geojsonUrl);
                 if (!response.ok) {
                     console.error(`Erreur lors du chargement des données GeoJSON pour le code INSEE ${codeINSEE}: ${response.status}`);
@@ -426,6 +381,66 @@ function addOrUpdateMarker(lat, lon, infos) {
         }
     }
         
+    function afficherSurCarte(lat, lon, infos) {
+    
+    }
+    
+    
+    async function finalizeDisplay() {
+        console.log(`Nombre total de points à l'intérieur de l'isochrone : ${totalPointsInsideIsochrone}`);
+        const dataToSend = {
+            type: 'pointsInsideIsochrone',
+            count: totalPointsInsideIsochrone
+        };
+    
+        console.log(dataToSend);
+    
+        // Send data to the parent window
+        window.parent.postMessage(dataToSend, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
+    
+        // Reset the counter for next use
+        totalPointsInsideIsochrone = 0;
+    }
+
+    // async function updateMapData() {
+//     lat = parseFloat(document.getElementById('latitude').value);
+//     lon = parseFloat(document.getElementById('longitude').value);
+//     mode = document.getElementById('mode').value;
+
+//     resetMap(); // Réinitialisez la carte et les données.
+//     codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
+//     grillePoints = [];
+
+//     try {
+//         await chargerIsochroneEtListerCommunes();
+//         await updateMap(); // Call updateMap here to add the geoJSON to the map as soon as it's loaded
+
+//         const legend = L.control({position: 'bottomright'});
+//         legend.onAdd = function (carte) {
+//             const div = L.DomUtil.create('div', 'legend');
+//             const grades = [0, 600, 800, 1000, 1500]; // Remplacez par les seuils appropriés pour votre indice
+//             const labels = [];
+//             // Générez un label avec un carré coloré pour chaque intervalle d'indice
+//             for (let i = 0; i < grades.length; i++) {
+//                 const from = grades[i];
+//                 const to = grades[i + 1];
+//                 let color = getColor(from + (to - from) / 2); // Utilisez votre fonction pour obtenir la couleur
+//                 labels.push('<i style="background:' + color + '"></i> ' + from + (to ? '&ndash;' + to : '+'));
+//             }
+//             div.innerHTML = labels.join('<br>');
+//             return div;
+//         };
+//         // legend.addTo(carte);
+
+//     } catch (error) {
+//         console.error('Error loading the GeoJSON or updating the map:', error);
+//     }
+// }
+
+// Ajout des écouteurs d'événements sur les champs d'input
+// document.getElementById('latitude').addEventListener('change', updateMapData);
+// document.getElementById('longitude').addEventListener('change', updateMapData);
+// document.getElementById('mode').addEventListener('change', updateMapData);
     
 // function onEachFeature(feature, layer) {
 //   if (feature.properties) {
@@ -475,23 +490,4 @@ function addOrUpdateMarker(lat, lon, infos) {
 //   };
 // }
 
-function afficherSurCarte(lat, lon, infos) {
-    
-}
 
-
-async function finalizeDisplay() {
-    console.log(`Nombre total de points à l'intérieur de l'isochrone : ${totalPointsInsideIsochrone}`);
-    const dataToSend = {
-        type: 'pointsInsideIsochrone',
-        count: totalPointsInsideIsochrone
-    };
-
-    console.log(dataToSend);
-
-    // Send data to the parent window
-    window.parent.postMessage(dataToSend, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
-
-    // Reset the counter for next use
-    totalPointsInsideIsochrone = 0;
-}
