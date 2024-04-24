@@ -291,8 +291,8 @@ function addOrUpdateMarker(lat, lon, infos) {
                         ${etablissement.uniteLegale.nomUniteLegale || ''} ${etablissement.uniteLegale.prenom1UniteLegale || ''}<br>
                         ${etablissement.adresseEtablissement.numeroVoieEtablissement || ''} ${etablissement.adresseEtablissement.typeVoieEtablissement || ''} ${etablissement.adresseEtablissement.libelleVoieEtablissement || ''}<br>
                         ${etablissement.adresseEtablissement.codePostalEtablissement || ''} ${etablissement.adresseEtablissement.libelleCommuneEtablissement || ''}<br>
-                        <a href="https://www.koosto.fr/tarifs">
-                        <button>Ce professionnel en détail</button>
+                        <a href="https://www.koosto.fr/tarifs" target="_blank">
+                        <button class="pro-details">Ce professionnel en détail</button>
                         </a> 
                     `;
         
