@@ -371,7 +371,7 @@ function addOrUpdateMarker(lat, lon, infos) {
     
         // Send data to the parent window
         window.parent.postMessage(dataToSend2, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
-    
+        window.parent.postMessage(dataToSend2, 'https://editor.weweb.io');
         // Reset the counter for next use
         countTiles = 0;
         sumInd = 0;
@@ -398,7 +398,8 @@ function addOrUpdateMarker(lat, lon, infos) {
     
         // Send data to the parent window
         window.parent.postMessage(dataToSend, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
-    
+        window.parent.postMessage(dataToSend, 'https://editor.weweb.io');
+
         // Reset the counter for next use
         totalPointsInsideIsochrone = 0;
     }
