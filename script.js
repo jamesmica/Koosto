@@ -207,7 +207,7 @@ async function chargerEtablissements(codesINSEE) {
     console.log('codes INSEE ', codesINSEE);
     for (const codeINSEE of codesINSEE) {
         console.log('insee sirene :', codeINSEE);
-        const urlSirene = `https://api.insee.fr/entreprises/sirene/V3.11/siret?q=codeCommuneEtablissement:${codeINSEE} AND periode(activitePrincipaleEtablissement:86.21Z)&nombre=100`;
+        const urlSirene = `https://api.insee.fr/entreprises/sirene/V3.11/siret?q=codeCommuneEtablissement:${codeINSEE} AND periode(activitePrincipaleEtablissement:86.21Z AND etatAdministratifEtablissement:A)&nombre=1000`;
 
         const response = await fetch(urlSirene, {
             method: 'GET',
