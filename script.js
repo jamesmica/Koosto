@@ -16,6 +16,14 @@ var data = {"lat":48.86666,"lon":2.333333,"mode":"driving","time":10};
 var lat = data.lat;
 var lon = data.lon;
 
+function testChargerDonnees() {
+    const testEvent = {
+        origin: 'https://koosto.fr',
+        data: JSON.stringify({"lat":48.86666, "lon":2.333333, "mode":"driving", "time":10})
+    };
+    window.dispatchEvent(new MessageEvent('message', testEvent));
+}
+
 window.addEventListener("message", async function(event) {
     if (!['http://koosto.fr', 'http://editor.weweb.io', 'https://editor.weweb.io', 'https://koosto.fr', 'https://www.koosto.fr'].includes(event.origin)) {
         alert('Origine inconnue : ', event.origin);
@@ -83,7 +91,6 @@ function initialiserCarte() {
 }
 
 var carte = initialiserCarte();
-
 function fetchIsochrone(map, center) {
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
     var url = `https://api.mapbox.com/isochrone/v1/mapbox/${center.mode}/${center.lon},${center.lat}?contours_minutes=${center.time || 10}&polygons=true&access_token=${apiKey}`;
@@ -201,42 +208,10 @@ async function chercherCoordonnees(adresse) {
     }
 }
 
-
-async function obtenirToken() {
-    const consumerKey = 'FpWzdUKsapCfZjz7CU4GEnWs3z8a';
-    const consumerSecret = 'nT4Bod4NLatvyQTs0mLaaGVMu3ca';
-    
-    // Encoder les credentials en Base64 pour l'authentification
-    const credentials = btoa(`${consumerKey}:${consumerSecret}`);
-    
-    const response = await fetch('https://api.insee.fr/token', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Basic ${credentials}`,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'grant_type=client_credentials'
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    } else {
-        const data = await response.json();
-        console.log('Token obtenu: ', data.access_token);
-        return data.access_token;
-    }
-}
-
-// Exemple d'utilisation pour charger les établissements
 async function chargerEtablissements(codesINSEE) {
-    try {
-        const token = await obtenirToken(); // Obtenir le token d'accès
-        console.log('Token utilisé pour la requête: ', token);
 
-        // La logique pour charger les établissements reste inchangée
-    } catch (error) {
-        console.error('Erreur lors de l\'obtention du token: ', error);
-    }
+        const token = "dd176d5c-6027-319e-8c42-7fc888ab5368"; // Obtenir le token d'accès
+
     for (const codeINSEE of codesINSEE) {
         console.log('insee sirene :', codeINSEE);
         const urlSirene = `https://api.insee.fr/entreprises/sirene/V3.11/siret?q=codeCommuneEtablissement:${codeINSEE} AND periode(activitePrincipaleEtablissement:86.21Z AND etatAdministratifEtablissement:A)&nombre=1000&date=2024-05-01`;
