@@ -87,7 +87,7 @@ function initialiserCarte() {
 }
 
 var carte = initialiserCarte();
-testChargerDonnees();
+// testChargerDonnees();
 function fetchIsochrone(map, center) {
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
     var url = `https://api.mapbox.com/isochrone/v1/mapbox/${center.mode}/${center.lon},${center.lat}?contours_minutes=${center.time || 10}&polygons=true&access_token=${apiKey}`;
@@ -374,7 +374,7 @@ function addOrUpdateMarker(lat, lon, infos) {
         console.log(dataToSend2);
     
         // Send data to the parent window
-        window.parent.postMessage(dataToSend2, 'https://www.koosto.fr/medecin-generaliste/simulateur-business-plan/'); // Replace '*' with the actual origin of the parent for security
+        window.parent.postMessage(dataToSend2, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
         window.parent.postMessage(dataToSend2, 'https://editor.weweb.io');
         // Reset the counter for next use
         countTiles = 0;
@@ -401,7 +401,7 @@ function addOrUpdateMarker(lat, lon, infos) {
         console.log(dataToSend);
     
         // Send data to the parent window
-        window.parent.postMessage(dataToSend, 'https://www.koosto.fr/medecin-generaliste/simulateur-business-plan/'); // Replace '*' with the actual origin of the parent for security
+        window.parent.postMessage(dataToSend, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
         window.parent.postMessage(dataToSend, 'https://editor.weweb.io');
 
         // Reset the counter for next use
