@@ -202,9 +202,41 @@ async function chercherCoordonnees(adresse) {
 }
 
 
+async function obtenirToken() {
+    const consumerKey = 'FpWzdUKsapCfZjz7CU4GEnWs3z8a';
+    const consumerSecret = 'nT4Bod4NLatvyQTs0mLaaGVMu3ca';
+    
+    // Encoder les credentials en Base64 pour l'authentification
+    const credentials = btoa(`${consumerKey}:${consumerSecret}`);
+    
+    const response = await fetch('https://api.insee.fr/token', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${credentials}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'grant_type=client_credentials'
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    } else {
+        const data = await response.json();
+        console.log('Token obtenu: ', data.access_token);
+        return data.access_token;
+    }
+}
+
+// Exemple d'utilisation pour charger les établissements
 async function chargerEtablissements(codesINSEE) {
-    const token = '354c9f77-e707-378c-b65c-b8b3e48d3da5'; // Utilisez votre token d'accès
-    console.log('codes INSEE ', codesINSEE);
+    try {
+        const token = await obtenirToken(); // Obtenir le token d'accès
+        console.log('Token utilisé pour la requête: ', token);
+
+        // La logique pour charger les établissements reste inchangée
+    } catch (error) {
+        console.error('Erreur lors de l\'obtention du token: ', error);
+    }
     for (const codeINSEE of codesINSEE) {
         console.log('insee sirene :', codeINSEE);
         const urlSirene = `https://api.insee.fr/entreprises/sirene/V3.11/siret?q=codeCommuneEtablissement:${codeINSEE} AND periode(activitePrincipaleEtablissement:86.21Z AND etatAdministratifEtablissement:A)&nombre=1000&date=2024-05-01`;
