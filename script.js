@@ -16,13 +16,14 @@ var data = {"lat":48.86666,"lon":2.333333,"mode":"driving","time":10};
 var lat = data.lat;
 var lon = data.lon;
 
-function testChargerDonnees() {
-    const testEvent = {
-        origin: 'https://www.koosto.fr/medecin-generaliste/simulateur-business-plan/',
-        data: JSON.stringify({"lat":48.86666, "lon":2.333333, "mode":"driving", "time":10})
-    };
-    window.dispatchEvent(new MessageEvent('message', testEvent));
-}
+// Fonction de test pour charger les données (à commenter pour la production)
+// function testChargerDonnees() {
+//     const testEvent = {
+//         origin: 'https://www.koosto.fr/medecin-generaliste/simulateur-business-plan/',
+//         data: JSON.stringify({"lat":48.86666, "lon":2.333333, "mode":"driving", "time":10})
+//     };
+//     window.dispatchEvent(new MessageEvent('message', testEvent));
+// }
 
 async function getAddressFromCoordinates(lat, lon) {
     const url = `https://api-adresse.data.gouv.fr/reverse/?lon=${lon}&lat=${lat}`;
@@ -62,7 +63,6 @@ async function afficherAdresseSurCarte(lat, lon) {
 }
 
 window.addEventListener("message", async function(event) {
-
     resetMap(); // Réinitialisez la carte et les données.
     codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
     grillePoints = [];
@@ -77,11 +77,11 @@ window.addEventListener("message", async function(event) {
         lat = data.lat;
         lon = data.lon;
         console.log(data.mode);
-        if (data.mode=="driving") {
+        if (data.mode == "driving") {
             mode = "driving";
-        }  else {
+        } else {
             mode = "walking";
-        } ;
+        }
 
         resetMap(); // Réinitialisez la carte et les données.
         codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
@@ -108,10 +108,9 @@ function resetMap() {
 }
 
 function initialiserCarte() {
-
     var carte = L.map('maCarte', {
         maxZoom: 18,   // Maximum zoom level that the user can zoom to
-        minZoom: 4     // Minimum zoom level that the user can zoom out to
+        minZoom: 4     // Minimum zoom level que l'utilisateur peut zoomer out to
     }).setView([lat, lon], 13);
 
     // Créer un nouveau pane pour les marqueurs avec un zIndex élevé
@@ -126,7 +125,8 @@ function initialiserCarte() {
 }
 
 var carte = initialiserCarte();
-// testChargerDonnees();
+// testChargerDonnees(); // Ligne à commenter pour la production
+
 function fetchIsochrone(map, center) {
     var apiKey = 'pk.eyJ1IjoiamFtZXNpdGhlYSIsImEiOiJjbG93b2FiaXEwMnVpMmpxYWYzYjBvOTVuIn0.G2rAo0xl14oye9YVz4eBcw';
     var url = `https://api.mapbox.com/isochrone/v1/mapbox/${center.mode}/${center.lon},${center.lat}?contours_minutes=${center.time || 10}&polygons=true&access_token=${apiKey}`;
@@ -161,10 +161,7 @@ function fetchIsochrone(map, center) {
     });
 }
 
-
-
 function creerGrillePointsEtAfficherSurCarte(isochrone, pas, map) {
-    // console.log('creerGrillePointsEtAfficherSurCarte(isochrone, pas, map)');
     const bbox = turf.bbox(isochrone.toGeoJSON());
     let grillePoints = [];
 
@@ -186,7 +183,6 @@ function creerGrillePointsEtAfficherSurCarte(isochrone, pas, map) {
 }
 
 async function listerCommunesCouvertesParIsochrone(isochrone) {
-
     let grillePoints = creerGrillePointsEtAfficherSurCarte(isochrone, 0.005, carte);
     for (let point of grillePoints) {
         const url = `https://api-adresse.data.gouv.fr/reverse/?lon=${point[1]}&lat=${point[0]}`;
@@ -196,21 +192,16 @@ async function listerCommunesCouvertesParIsochrone(isochrone) {
             if (dataReverse.features && dataReverse.features.length > 0) {
                 const codeINSEE = dataReverse.features[0].properties.citycode;
                 codesINSEE.add(codeINSEE);
-                // Ne pas retourner ici, continuez à collecter les codes INSEE
             } else {
                 console.error('Communes couvertes isochrone: aucun résultat trouvé pour le point:', point[0], point[1]);
-                // Ne pas retourner ici, continuez à traiter les autres points
             }
         } catch (error) {
             console.error('Erreur lors du géocodage du point:', 'lat', point[0], 'lon', point[1], error);
-            // Ne pas retourner ici, continuez à traiter les autres points
         }
     }
 
-    // Retournez tous les codes INSEE collectés après avoir traité tous les points
     return Array.from(codesINSEE);
 }
-
 
 async function chargerIsochroneEtListerCommunes() {
     try {
@@ -219,7 +210,6 @@ async function chargerIsochroneEtListerCommunes() {
         var codes = await listerCommunesCouvertesParIsochrone(currentIsochrone);
         console.log("Codes INSEE des communes touchées:", codes);
         await chargerEtablissements(codes);
-
     } catch (error) {
         console.error('Erreur:', error);
     }
@@ -232,7 +222,6 @@ async function chercherCoordonnees(adresse) {
         const data = await response.json();
         if (data.features && data.features.length > 0) {
             const coords = data.features[0].geometry.coordinates;
-            // Les coordonnées sont retournées sous la forme [longitude, latitude]
             return { lon: coords[0], lat: coords[1] };
         } else {
             console.error('Aucun résultat trouvé pour l\'adresse:', adresse);
@@ -244,12 +233,38 @@ async function chercherCoordonnees(adresse) {
     }
 }
 
-async function chargerEtablissements(codesINSEE) {
+// Fonction pour convertir les coordonnées Lambert-93 en WGS84 en utilisant proj4
+function lambert93toWGS84(x, y) {
+    const lambert93 = "+proj=lcc +lat_1=44 +lat_2=49 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs";
+    const wgs84 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
 
-        const token = "dd176d5c-6027-319e-8c42-7fc888ab5368"; // Obtenir le token d'accès
+    console.log("Received Lambert-93 coordinates:", x, y);
+
+    // Conversion explicite en nombres
+    x = parseFloat(x);
+    y = parseFloat(y);
+
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        console.error("Invalid Lambert-93 coordinates after conversion:", x, y);
+        return { lat: null, lon: null };
+    }
+
+    try {
+        const [lon, lat] = proj4(lambert93, wgs84, [x, y]);
+        console.log("Converted WGS84 coordinates:", { lat, lon });
+        return { lat, lon };
+    } catch (error) {
+        console.error("Error during conversion:", error);
+        return { lat: null, lon: null };
+    }
+}
+
+// Fonction pour charger les établissements
+async function chargerEtablissements(codesINSEE) {
+    const token = "dd176d5c-6027-319e-8c42-7fc888ab5368"; // Obtenir le token d'accès
 
     for (const codeINSEE of codesINSEE) {
-        console.log('insee sirene :', codeINSEE);
+        console.log('INSEE code:', codeINSEE);
         const urlSirene = `https://api.insee.fr/entreprises/sirene/V3.11/siret?q=codeCommuneEtablissement:${codeINSEE} AND periode(activitePrincipaleEtablissement:86.21Z AND etatAdministratifEtablissement:A)&nombre=1000&date=2024-05-01`;
 
         const response = await fetch(urlSirene, {
@@ -266,81 +281,74 @@ async function chargerEtablissements(codesINSEE) {
         }
 
         const dataSirene = await response.json();
-        // console.log("datasirene", dataSirene);
-        // console.log('etablissement : ',dataSirene.etablissements);
         var markersByCoord = {};
-// Définition des icônes avec différentes tailles pour différentes quantités d'informations
-var iconSingle = L.icon({
-    iconUrl: 'img/pin.png',
-    iconSize: [24, 24], // Taille standard pour un seul point
-    iconAnchor: [12, 24],
-    popupAnchor: [0, -24]
-});
 
-var iconMultiple = L.icon({
-    iconUrl: 'img/multipin.png', // Assurez-vous que cette image existe et est différente de pin.png
-    iconSize: [24, 24], // Taille standard pour un seul point
-    iconAnchor: [12, 24],
-    popupAnchor: [0, -24]
-});
+        var iconSingle = L.icon({
+            iconUrl: 'img/pin.png',
+            iconSize: [24, 24],
+            iconAnchor: [12, 24],
+            popupAnchor: [0, -24]
+        });
 
-function addOrUpdateMarker(lat, lon, infos) {
-    if (!lat || !lon) {
-        console.log("Coordonnées non disponibles pour l'établissement :", infos);
-        return;
-    }
+        var iconMultiple = L.icon({
+            iconUrl: 'img/multipin.png',
+            iconSize: [24, 24],
+            iconAnchor: [12, 24],
+            popupAnchor: [0, -24]
+        });
 
-    let point = turf.point([lon, lat]);
-    if (!(currentIsochrone && turf.booleanPointInPolygon(point, currentIsochrone.toGeoJSON()))) {
-        console.log("Point hors de l'isochrone: ", lat, lon);
-        return;
-    }
+        function addOrUpdateMarker(lat, lon, infos) {
+            if (!lat || !lon) {
+                console.log("Coordonnées non disponibles pour l'établissement :", infos);
+                return;
+            }
 
-    var coordKey = `${lat},${lon}`;
-    if (markersByCoord.hasOwnProperty(coordKey)) {
-        // Si un marqueur existe déjà, mettre à jour le popup et augmenter le compteur
-        var markerData = markersByCoord[coordKey];
-        var existingPopup = markerData.marker.getPopup();
-        markerData.count += 1;
-        existingPopup.setContent(existingPopup.getContent() + '<hr>' + infos);
-        // Changer l'icône si le nombre d'informations est supérieur à un
-        if (markerData.count > 1) {
-            markerData.marker.setIcon(iconMultiple);
+            let point = turf.point([lon, lat]);
+            if (!(currentIsochrone && turf.booleanPointInPolygon(point, currentIsochrone.toGeoJSON()))) {
+                console.log("Point hors de l'isochrone: ", lat, lon);
+                return;
+            }
+
+            var coordKey = `${lat},${lon}`;
+            if (markersByCoord.hasOwnProperty(coordKey)) {
+                var markerData = markersByCoord[coordKey];
+                var existingPopup = markerData.marker.getPopup();
+                markerData.count += 1;
+                existingPopup.setContent(existingPopup.getContent() + '<hr>' + infos);
+                if (markerData.count > 1) {
+                    markerData.marker.setIcon(iconMultiple);
+                }
+                totalPointsInsideIsochrone += 1;
+            } else {
+                var marker = L.marker([lat, lon], {icon: iconSingle}).bindPopup(infos).addTo(carte);
+                markersByCoord[coordKey] = { marker: marker, count: 1 };
+                totalPointsInsideIsochrone += 1;
+            }
         }
-        totalPointsInsideIsochrone +=1;
-    } else {
-        // Créer un nouveau marqueur avec un popup
-        var marker = L.marker([lat, lon], {icon: iconSingle}).bindPopup(infos).addTo(carte);
-        // Stocker le marqueur et initialiser le compteur d'informations
-        markersByCoord[coordKey] = { marker: marker, count: 1 };
-        totalPointsInsideIsochrone +=1;
-    }
-}
 
-        
-        
-        
-        
-        // Intégration avec la fonction de traitement des établissements
         if (dataSirene.etablissements && dataSirene.etablissements.length > 0) {
             dataSirene.etablissements.forEach(etablissement => {
-                if (etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement > 0 &&
-                    etablissement.adresseEtablissement.coordonneeLambertOrdonneeEtablissement > 0) {
-                    
-                    // Conversion des coordonnées Lambert en lat/lon si nécessaire
-                    let lat = etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement;
-                    let lon = etablissement.adresseEtablissement.coordonneeLambertOrdonneeEtablissement;
-                    let infos = `
-                        ${etablissement.uniteLegale.nomUniteLegale || ''} ${etablissement.uniteLegale.prenom1UniteLegale || ''}<br>
-                        ${etablissement.adresseEtablissement.numeroVoieEtablissement || ''} ${etablissement.adresseEtablissement.typeVoieEtablissement || ''} ${etablissement.adresseEtablissement.libelleVoieEtablissement || ''}<br>
-                        ${etablissement.adresseEtablissement.codePostalEtablissement || ''} ${etablissement.adresseEtablissement.libelleCommuneEtablissement || ''}<br>
-                        <a href="https://www.koosto.fr/tarifs" target="_blank">
-                        <button class="pro-details">Ce professionnel en détail</button>
-                        </a> 
-                    `;
-        
-                    // Ajouter ou mettre à jour les marqueurs sur la carte
-                    addOrUpdateMarker(lat, lon, infos);
+                const lambertX = etablissement.adresseEtablissement.coordonneeLambertAbscisseEtablissement;
+                const lambertY = etablissement.adresseEtablissement.coordonneeLambertOrdonneeEtablissement;
+
+                if (lambertX > 0 && lambertY > 0) {
+                    console.log("Lambert-93 coordinates for establishment:", lambertX, lambertY);
+
+                    // Conversion explicite en nombres
+                    let { lat, lon } = lambert93toWGS84(parseFloat(lambertX), parseFloat(lambertY));
+
+                    if (lat !== null && lon !== null) {
+                        let infos = `
+                            ${etablissement.uniteLegale.nomUniteLegale || ''} ${etablissement.uniteLegale.prenom1UniteLegale || ''}<br>
+                            ${etablissement.adresseEtablissement.numeroVoieEtablissement || ''} ${etablissement.adresseEtablissement.typeVoieEtablissement || ''} ${etablissement.adresseEtablissement.libelleVoieEtablissement || ''}<br>
+                            ${etablissement.adresseEtablissement.codePostalEtablissement || ''} ${etablissement.adresseEtablissement.libelleCommuneEtablissement || ''}<br>
+                            <a href="https://www.koosto.fr/tarifs" target="_blank">
+                            <button class="pro-details">Ce professionnel en détail</button>
+                            </a> 
+                        `;
+
+                        addOrUpdateMarker(lat, lon, infos);
+                    }
                 }
             });
         }
@@ -348,191 +356,100 @@ function addOrUpdateMarker(lat, lon, infos) {
     finalizeDisplay();
 }
 
-
-    async function updateMap() {
-        if (!codesINSEE || codesINSEE.size === 0) {
-            console.error("Aucun code INSEE disponible pour charger les GeoJSON.");
-            return;
-        }
-    
-        let uniqueIds = new Set(); // Ensemble pour stocker les identifiants uniques
-        countTiles = 0; // Compteur pour le nombre de carreaux uniques
-        let sumInd = 0; // Somme des valeurs de 'ind' pour les carreaux uniques
-    
-        // Supprimer toutes les couches GeoJSON existantes
-        carte.eachLayer(layer => {
-            if (layer instanceof L.GeoJSON) {
-                carte.removeLayer(layer);
-            }
-        });
-    
-        // Charger tous les GeoJSON et les fusionner
-        let allFeatures = []; // Pour stocker toutes les caractéristiques de tous les GeoJSON
-        for (let codeINSEE of codesINSEE) {
-            try {
-                const geojsonUrl = `shp_test/${codeINSEE}.geojson`;
-                const response = await fetch(geojsonUrl);
-                if (!response.ok) {
-                    console.error(`Erreur lors du chargement des données GeoJSON pour le code INSEE ${codeINSEE}: ${response.status}`);
-                    continue;
-                }
-                let dataCarreaux = await response.json();
-                allFeatures = allFeatures.concat(dataCarreaux.features); // Fusionner les caractéristiques
-            } catch (error) {
-                console.error(`Erreur lors du chargement du GeoJSON pour le code INSEE ${codeINSEE}:`, error);
-            }
-        }
-    
-        // Filtrer et traiter toutes les caractéristiques fusionnées
-        let filteredFeatures = allFeatures.filter(feature => {
-            let idCar = feature.properties.idcar_200m;
-            if (!uniqueIds.has(idCar) && turf.intersect(feature.geometry, currentIsochrone.toGeoJSON())) {
-                uniqueIds.add(idCar); // Ajouter l'identifiant au Set pour éviter les doublons
-                countTiles++; // Incrémenter le compteur pour chaque carreau unique
-                sumInd += feature.properties.ind || 0; // Ajouter la valeur de 'ind' à la somme
-                return true;
-            }
-            return false;
-        });
-    
-        // Créer et ajouter une nouvelle couche GeoJSON avec les caractéristiques filtrées
-        // L.geoJSON({type: 'FeatureCollection', features: filteredFeatures}, { 
-        //     style: style,
-        //     onEachFeature: onEachFeature
-        // }).addTo(carte);
-    
-        // Afficher le résultat final après le traitement de toutes les caractéristiques
-        console.log(`Nombre de carreaux uniques à l'intérieur de l'isochrone: ${countTiles}, Somme de 'ind' pour ces carreaux: ${sumInd}`);
-        
-        const dataToSend2 = {
-            type: 'tilesInsideIsochrone',
-            tiles: countTiles,
-            pop: sumInd
-        };
-    
-        console.log(dataToSend2);
-    
-        // Send data to the parent window
-        window.parent.postMessage(dataToSend2, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
-        window.parent.postMessage(dataToSend2, 'https://editor.weweb.io');
-        // Reset the counter for next use
-        countTiles = 0;
-        sumInd = 0;
-
-        // Mettre l'isochrone au premier plan après avoir ajouté les carreaux
-        if (currentIsochrone) {
-            currentIsochrone.bringToFront();
-        }
-    }
-        
-    function afficherSurCarte(lat, lon, infos) {
-    
-    }
-    
-    
-    async function finalizeDisplay() {
-        console.log(`Nombre total de points à l'intérieur de l'isochrone : ${totalPointsInsideIsochrone}`);
-        const dataToSend = {
-            type: 'pointsInsideIsochrone',
-            count: totalPointsInsideIsochrone
-        };
-    
-        console.log(dataToSend);
-    
-        // Send data to the parent window
-        window.parent.postMessage(dataToSend, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
-        window.parent.postMessage(dataToSend, 'https://editor.weweb.io');
-
-        // Reset the counter for next use
-        totalPointsInsideIsochrone = 0;
+async function updateMap() {
+    if (!codesINSEE || codesINSEE.size === 0) {
+        console.error("Aucun code INSEE disponible pour charger les GeoJSON.");
+        return;
     }
 
-    // async function updateMapData() {
-//     lat = parseFloat(document.getElementById('latitude').value);
-//     lon = parseFloat(document.getElementById('longitude').value);
-//     mode = document.getElementById('mode').value;
+    let uniqueIds = new Set(); // Ensemble pour stocker les identifiants uniques
+    countTiles = 0; // Compteur pour le nombre de carreaux uniques
+    let sumInd = 0; // Somme des valeurs de 'ind' pour les carreaux uniques
 
-//     resetMap(); // Réinitialisez la carte et les données.
-//     codesINSEE.clear(); // Très important pour ne pas garder les anciens codes INSEE.
-//     grillePoints = [];
+    // Supprimer toutes les couches GeoJSON existantes
+    carte.eachLayer(layer => {
+        if (layer instanceof L.GeoJSON) {
+            carte.removeLayer(layer);
+        }
+    });
 
-//     try {
-//         await chargerIsochroneEtListerCommunes();
-//         await updateMap(); // Call updateMap here to add the geoJSON to the map as soon as it's loaded
+    // Charger tous les GeoJSON et les fusionner
+    let allFeatures = []; // Pour stocker toutes les caractéristiques de tous les GeoJSON
+    for (let codeINSEE of codesINSEE) {
+        try {
+            const geojsonUrl = `shp_test/${codeINSEE}.geojson`;
+            const response = await fetch(geojsonUrl);
+            if (!response.ok) {
+                console.error(`Erreur lors du chargement des données GeoJSON pour le code INSEE ${codeINSEE}: ${response.status}`);
+                continue;
+            }
+            let dataCarreaux = await response.json();
+            allFeatures = allFeatures.concat(dataCarreaux.features); // Fusionner les caractéristiques
+        } catch (error) {
+            console.error(`Erreur lors du chargement du GeoJSON pour le code INSEE ${codeINSEE}:`, error);
+        }
+    }
 
-//         const legend = L.control({position: 'bottomright'});
-//         legend.onAdd = function (carte) {
-//             const div = L.DomUtil.create('div', 'legend');
-//             const grades = [0, 600, 800, 1000, 1500]; // Remplacez par les seuils appropriés pour votre indice
-//             const labels = [];
-//             // Générez un label avec un carré coloré pour chaque intervalle d'indice
-//             for (let i = 0; i < grades.length; i++) {
-//                 const from = grades[i];
-//                 const to = grades[i + 1];
-//                 let color = getColor(from + (to - from) / 2); // Utilisez votre fonction pour obtenir la couleur
-//                 labels.push('<i style="background:' + color + '"></i> ' + from + (to ? '&ndash;' + to : '+'));
-//             }
-//             div.innerHTML = labels.join('<br>');
-//             return div;
-//         };
-//         // legend.addTo(carte);
+    // Filtrer et traiter toutes les caractéristiques fusionnées
+    let filteredFeatures = allFeatures.filter(feature => {
+        let idCar = feature.properties.idcar_200m;
+        if (!uniqueIds.has(idCar) && turf.intersect(feature.geometry, currentIsochrone.toGeoJSON())) {
+            uniqueIds.add(idCar); // Ajouter l'identifiant au Set pour éviter les doublons
+            countTiles++; // Incrémenter le compteur pour chaque carreau unique
+            sumInd += feature.properties.ind || 0; // Ajouter la valeur de 'ind' à la somme
+            return true;
+        }
+        return false;
+    });
 
-//     } catch (error) {
-//         console.error('Error loading the GeoJSON or updating the map:', error);
-//     }
-// }
+    // Créer et ajouter une nouvelle couche GeoJSON avec les caractéristiques filtrées
+    // L.geoJSON({type: 'FeatureCollection', features: filteredFeatures}, { 
+    //     style: style,
+    //     onEachFeature: onEachFeature
+    // }).addTo(carte);
 
-// Ajout des écouteurs d'événements sur les champs d'input
-// document.getElementById('latitude').addEventListener('change', updateMapData);
-// document.getElementById('longitude').addEventListener('change', updateMapData);
-// document.getElementById('mode').addEventListener('change', updateMapData);
+    // Afficher le résultat final après le traitement de toutes les caractéristiques
+    console.log(`Nombre de carreaux uniques à l'intérieur de l'isochrone: ${countTiles}, Somme de 'ind' pour ces carreaux: ${sumInd}`);
     
-// function onEachFeature(feature, layer) {
-//   if (feature.properties) {
-//     // Calculs préliminaires pour éviter de répéter le calcul
-//     let population = feature.properties.ind || 'Non spécifié';
-//     let densite = population * 1/0.04;
-//     let tailleMenage = feature.properties.men ? (population / feature.properties.men).toFixed(2) : 'Non spécifié';
-//     let revenusIndividus = feature.properties.ind_snv ? (feature.properties.ind_snv / population).toFixed(0) : 'Non spécifié';
-//     let pauvreteMenages = feature.properties.men_pauv && feature.properties.men ? (feature.properties.men_pauv / feature.properties.men * 100).toFixed(2) + '%' : 'Non spécifié';
+    const dataToSend2 = {
+        type: 'tilesInsideIsochrone',
+        tiles: countTiles,
+        pop: sumInd
+    };
 
-//     var popupContent = "<div style='font-size: 12px;'>";
-//     popupContent += "<strong>Code INSEE: </strong>" + feature.properties.lcog_geo + "<br>";
-//     popupContent += "<strong>Population: </strong>" + population.toFixed(0) + "<br>";
-//     popupContent += "<strong>Densité : </strong>" + densite.toFixed(0) + " hab/km²<br>";
-//     popupContent += "<strong>Taille typique d'un ménage: </strong>" + tailleMenage + " pers./ménage<br>";
-//     popupContent += "<strong>Revenus des individus: </strong>" + revenusIndividus + " €<br>";
-//     popupContent += "<strong>Pauvreté des ménages: </strong>" + pauvreteMenages + "<br>";
-//     popupContent += "</div>";
+    console.log(dataToSend2);
 
-//     layer.bindPopup(popupContent);
-//   }
-// }
+    // Send data to the parent window
+    window.parent.postMessage(dataToSend2, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
+    window.parent.postMessage(dataToSend2, 'https://editor.weweb.io');
+    // Reset the counter for next use
+    countTiles = 0;
+    sumInd = 0;
 
+    // Mettre l'isochrone au premier plan après avoir ajouté les carreaux
+    if (currentIsochrone) {
+        currentIsochrone.bringToFront();
+    }
+}
 
-//     function getColor(d) {
-// //   console.log(d); // Afficher la valeur d'indice pour laquelle une couleur est demandée
-//   return d > 1500 ? '#000099' :
-//          d > 1000 ? '#1919FF' :
-//          d > 800 ? '#6666FF' :
-//          d > 600 ? '#9999FF' :
-//          d < 601 ? '#E5E5FF' :
-//                      '#000099'; // Utilisez des seuils appropriés à vos données
-// }
+function afficherSurCarte(lat, lon, infos) {
+}
 
+async function finalizeDisplay() {
+    console.log(`Nombre total de points à l'intérieur de l'isochrone : ${totalPointsInsideIsochrone}`);
+    const dataToSend = {
+        type: 'pointsInsideIsochrone',
+        count: totalPointsInsideIsochrone
+    };
 
-// // Utilisez une fonction similaire pour définir le style de vos entités GeoJSON en fonction de l'indice
-// function style(feature) {
-// //   console.log(feature.properties.Ind_snv, feature.properties.Ind); // Afficher les valeurs dans la console
-//   var indice = feature.properties.ind;
-// //   console.log(indice); // Afficher le résultat de la division
-//   return {
-//     fillColor: getColor(indice),
-//     weight: 1,
-//     opacity: 1,
-//     color: 'white',
-//     fillOpacity: 0.7
-//   };
-// }
+    console.log(dataToSend);
 
+    // Send data to the parent window
+    window.parent.postMessage(dataToSend, 'https://www.koosto.fr'); // Replace '*' with the actual origin of the parent for security
+    window.parent.postMessage(dataToSend, 'https://editor.weweb.io');
 
+    // Reset the counter for next use
+    totalPointsInsideIsochrone = 0;
+}
+
+// testChargerDonnees(); // Ligne à commenter pour la production
