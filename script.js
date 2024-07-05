@@ -17,13 +17,13 @@ var lat = data.lat;
 var lon = data.lon;
 
 // Fonction de test pour charger les données (à commenter pour la production)
-// function testChargerDonnees() {
-//     const testEvent = {
-//         origin: 'https://www.koosto.fr/medecin-generaliste/simulateur-business-plan/',
-//         data: JSON.stringify({"lat":48.86666, "lon":2.333333, "mode":"driving", "time":10})
-//     };
-//     window.dispatchEvent(new MessageEvent('message', testEvent));
-// }
+function testChargerDonnees() {
+    const testEvent = {
+        origin: 'https://www.koosto.fr/medecin-generaliste/simulateur-business-plan/',
+        data: JSON.stringify({"lat":48.86666, "lon":2.333333, "mode":"driving", "time":10})
+    };
+    window.dispatchEvent(new MessageEvent('message', testEvent));
+}
 
 async function getAddressFromCoordinates(lat, lon) {
     const url = `https://api-adresse.data.gouv.fr/reverse/?lon=${lon}&lat=${lat}`;
